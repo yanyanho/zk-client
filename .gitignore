@@ -10,3 +10,6 @@
 # OS X
 .DS_Store
 */__pycache__/*
+python_web3/client/__pycache__/
+*.pyc
+__pycache__/
