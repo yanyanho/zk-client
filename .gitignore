@@ -1,0 +1,12 @@
+# Created by .ignore support plugin (hsz.mobi)
+
+
+# Work around https://youtrack.jetbrains.com/issue/IDEA-116898
+# gradle/wrapper/gradle-wrapper.properties
+
+.idea
+*.iml
+
+# OS X
+.DS_Store
+
