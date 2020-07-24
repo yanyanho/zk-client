@@ -288,29 +288,30 @@ class MixerClient:
     """
     def __init__(
             self,
-            web3: Any,
+            #web3: Any,
             prover_client: ProverClient,
             mixer_instance: Any,
             zksnark: IZKSnarkProvider):
         self._prover_client = prover_client
-        self.web3 = web3
+        #self.web3 = web3
         self._zksnark = zksnark
         self.mixer_instance = mixer_instance
 
     @staticmethod
     def open(
-            web3: Any,
+            #web3: Any,
             prover_server_endpoint: str,
             mixer_instance: Any) -> MixerClient:
         """
         Create a client for an existing Zeth deployment.
         """
         return MixerClient(
-            web3,
+            #web3,
             ProverClient(prover_server_endpoint),
             mixer_instance,
             get_zksnark_provider(constants.ZKSNARK_DEFAULT))
 
+    '''
     @staticmethod
     def deploy(
             web3: Any,
@@ -324,8 +325,8 @@ class MixerClient:
         Deploy Zeth contracts.
         """
         print("[INFO] 1. Fetching verification key from the proving server")
-        zksnark = zksnark or get_zksnark_provider(constants.ZKSNARK_DEFAULT)
-        prover_client = ProverClient(prover_server_endpoint)
+        zksnark = zksnark or get_zksnark_provider(constants.ZKSNARK_DEFAULT) #Groth16SnarkProvider
+        prover_client = ProverClient(prover_server_endpoint) #gRPC客户端实例
         vk_obj = prover_client.get_verification_key()
         vk_json = zksnark.parse_verification_key(vk_obj)
         deploy_gas = deploy_gas or \
@@ -335,8 +336,8 @@ class MixerClient:
         write_verification_key(vk_json)
 
         print("[INFO] 3. VK written, deploying smart contracts...")
-        contracts_dir = get_contracts_dir()
-        mixer_name = zksnark.get_contract_name()
+        contracts_dir = get_contracts_dir() #../../zeth_contract
+        mixer_name = zksnark.get_contract_name() #Groth16Mixer
         mixer_src = os.path.join(contracts_dir, mixer_name + ".sol")
 
         verification_key_params = zksnark.verification_key_parameters(vk_json)
@@ -353,7 +354,7 @@ class MixerClient:
         mixer_instance = mixer_description.instantiate(web3)
         client = MixerClient(web3, prover_client, mixer_instance, zksnark)
         return client, mixer_description
-
+    '''
     def deposit(
             self,
             mk_tree: MerkleTree,
@@ -398,7 +399,7 @@ class MixerClient:
 
         # By default transfer exactly v_in, otherwise allow caller to manually
         # specify.
-        tx_value = tx_value or v_in
+        tx_value = tx_value or v_in #如果是deposit eth，则tx_value等于v_in，如果是deposit erc20，则tx_value等于EtherValue(0)
         return self.mix(
             mix_params,
             sender_eth_address,
@@ -436,7 +437,7 @@ class MixerClient:
         outputs = \
             outputs + \
             [(dummy_addr_pk, EtherValue(0))
-             for _ in range(constants.JS_OUTPUTS - len(outputs))]
+             for _ in range(constants.JS_OUTPUTS - len(outputs))] #根据需要构造dummy output，缺多少个构造多少个
         outputs_with_a_pk = \
             [(zeth_addr.a_pk, to_zeth_units(value))
              for (zeth_addr, value) in outputs]
@@ -514,10 +515,10 @@ class MixerClient:
             self._zksnark,
             self.mixer_instance,
             mix_params,
-            sender_eth_address,
+            #sender_eth_address,
             wei_pub_value,
             call_gas)
-
+    '''
     def mix_call(
             self,
             mix_params: contracts.MixParameters,
@@ -531,7 +532,7 @@ class MixerClient:
             sender_eth_address,
             wei_pub_value,
             call_gas)
-
+    '''
     def get_proof_joinsplit_2_by_2(
             self,
             mk_root: bytes,

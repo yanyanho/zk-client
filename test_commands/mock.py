@@ -8,23 +8,23 @@ from zeth.zeth_address import ZethAddress
 from zeth.encryption import EncryptionKeyPair, decode_encryption_secret_key, \
     decode_encryption_public_key
 from zeth.ownership import gen_ownership_keypair
-from zeth.utils import get_contracts_dir, open_web3
+from zeth.utils import get_contracts_dir
 from os.path import join
 from solcx import compile_files  # type: ignore
 from typing import Dict, List, Tuple, Optional, Any
 
 # Web3 HTTP provider
-TEST_PROVER_SERVER_ENDPOINT: str = "localhost:50051"
-TEST_WEB3_PROVIDER_ENDPOINT: str = "http://localhost:8545"
+TEST_PROVER_SERVER_ENDPOINT: str = "119.23.46.126:50051"
+#TEST_WEB3_PROVIDER_ENDPOINT: str = "http://localhost:8545"
 TEST_NOTE_DIR: str = "_test_notes"
 
 KeyStore = Dict[str, ZethAddress]
 
-
+'''
 def open_test_web3() -> Tuple[Any, Any]:
     web3 = open_web3(TEST_WEB3_PROVIDER_ENDPOINT)
     return web3, web3.eth  # pylint: disable=no-member # type: ignore
-
+'''
 
 def init_test_keystore() -> KeyStore:
     """
