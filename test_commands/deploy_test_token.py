@@ -5,14 +5,14 @@
 from zeth.contracts import Interface
 from zeth.utils import get_zeth_dir
 from zeth.constants import SOL_COMPILER_VERSION
-from test_commands.mock import open_test_web3
+#from test_commands.mock import open_test_web3
 from click import command, argument
 from os.path import join
 from solcx import compile_files, set_solc_version
 from typing import Any
 from web3 import Web3  # type: ignore
 
-
+'''
 @command()
 @argument("deployer_address")
 @argument("mint_amount", type=int)
@@ -31,8 +31,8 @@ def deploy_test_token(
         token_instance, recipient_address, deployer_address, mint_amount)
     eth.waitForTransactionReceipt(mint_tx_hash)
     print(token_instance.address)
-
-
+'''
+'''
 def compile_token() -> Interface:
     """
     Compile the testing ERC20 token contract
@@ -51,8 +51,8 @@ def compile_token() -> Interface:
     compiled_sol = compile_files([path_to_token], allow_paths=allowed_path)
     token_interface = compiled_sol[path_to_token + ":ERC20Mintable"]
     return token_interface
-
-
+'''
+'''
 def deploy_token(
         eth: Any,
         deployer_address: str,
@@ -72,16 +72,16 @@ def deploy_token(
         abi=token_interface['abi'],
     )
     return token
-
+'''
 
 def mint_token(
         token_instance: Any,
         spender_address: str,
         deployer_address: str,
         token_amount: int) -> bytes:
-    return token_instance.functions.mint(
+    return token_instance.mint(
         spender_address,
-        Web3.toWei(token_amount, 'ether')).transact({'from': deployer_address})
+        Web3.toWei(token_amount, 'ether'))
 
 
 if __name__ == "__main__":

@@ -15,7 +15,7 @@ import sys
 import os
 from os.path import join, dirname, normpath
 import eth_abi
-from web3 import Web3, HTTPProvider  # type: ignore
+from web3 import Web3  # type: ignore
 from py_ecc import bn128 as ec
 from typing import List, Tuple, Union, Any, cast
 
@@ -24,7 +24,7 @@ from typing import List, Tuple, Union, Any, cast
 # most machines, but allow 1 min.
 WEB3_HTTP_PROVIDER_TIMEOUT_SEC = 60
 
-
+'''
 def open_web3(url: str) -> Any:
     """
     Create a Web3 context from an http URL.
@@ -32,7 +32,7 @@ def open_web3(url: str) -> Any:
     return Web3(HTTPProvider(
         url,
         request_kwargs={'timeout': WEB3_HTTP_PROVIDER_TIMEOUT_SEC}))
-
+'''
 
 FQ = ec.FQ
 G1 = Tuple[ec.FQ, ec.FQ]

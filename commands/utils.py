@@ -9,13 +9,16 @@ from zeth.contracts import \
     InstanceDescription, get_block_number, get_mix_results, compile_files
 from zeth.mixer_client import MixerClient
 from zeth.utils import \
-    open_web3, short_commitment, EtherValue, get_zeth_dir, from_zeth_units
+    short_commitment, EtherValue, get_zeth_dir, from_zeth_units
 from zeth.wallet import ZethNoteDescription, Wallet
 from click import ClickException
 import json
 from os.path import exists, join
 from typing import Dict, Tuple, Optional, Callable, Any
-from web3 import Web3  # type: ignore
+#from web3 import Web3  # type: ignore
+from Groth16Mixer import Groth16Mixer
+from bac import bac
+from python_web3.client.bcoskeypair import BcosKeyPair #todo
 
 
 class ClientConfig:
@@ -26,20 +29,20 @@ class ClientConfig:
             self,
             eth_rpc_endpoint: str,
             prover_server_endpoint: str,
-            instance_file: str,
+            #instance_file: str,
             address_file: str,
             wallet_dir: str):
         self.eth_rpc_endpoint = eth_rpc_endpoint
         self.prover_server_endpoint = prover_server_endpoint
-        self.instance_file = instance_file
+        #self.instance_file = instance_file
         self.address_file = address_file
         self.wallet_dir = wallet_dir
 
-
+'''
 def open_web3_from_ctx(ctx: ClientConfig) -> Any:
     return open_web3(ctx.eth_rpc_endpoint)
-
-
+'''
+'''
 class MixerDescription:
     """
     Holds an InstanceDescription for the mixer contract, and optionally an
@@ -105,7 +108,7 @@ def load_mixer_description(mixer_description_file: str) -> MixerDescription:
 
 def load_mixer_description_from_ctx(ctx: ClientConfig) -> MixerDescription:
     return load_mixer_description(ctx.instance_file)
-
+'''
 
 def get_zeth_address_file(ctx: ClientConfig) -> str:
     return ctx.address_file
@@ -170,25 +173,26 @@ def open_wallet(
 
 
 def do_sync(
-        web3: Any,
+        #web3: Any,
         wallet: Wallet,
-        wait_tx: Optional[str],
+        receipt: Any,
+        #wait_tx: Optional[str],
         callback: Optional[Callable[[ZethNoteDescription], None]] = None) -> int:
     """
     Implementation of sync, reused by several commands.  Returns the
     block_number synced to.  Also updates and saves the MerkleTree.
     """
     def _do_sync() -> int:
-        wallet_next_block = wallet.get_next_block()
-        chain_block_number: int = get_block_number(web3)
+        #wallet_next_block = wallet.get_next_block()
+        #chain_block_number: int = get_block_number(web3)
 
-        if chain_block_number >= wallet_next_block:
-            new_merkle_root: Optional[bytes] = None
+        #if chain_block_number >= wallet_next_block:
+            #new_merkle_root: Optional[bytes] = None
 
-            print(f"SYNCHING blocks ({wallet_next_block} - {chain_block_number})")
+            #print(f"SYNCHING blocks ({wallet_next_block} - {chain_block_number})")
             mixer_instance = wallet.mixer_instance
             for mix_result in get_mix_results(
-                    web3, mixer_instance, wallet_next_block, chain_block_number):
+                    mixer_instance, receipt):
                 new_merkle_root = mix_result.new_merkle_root
                 for note_desc in wallet.receive_notes(mix_result.output_events):
                     if callback:
@@ -198,26 +202,26 @@ def do_sync(
                 for commit in spent_commits:
                     print(f"    SPENT: {commit}")
 
-            wallet.update_and_save_state(next_block=chain_block_number + 1)
+            wallet.update_and_save_state()
 
             # Check merkle root and save the updated tree
             if new_merkle_root:
                 our_merkle_root = wallet.merkle_tree.get_root()
                 assert new_merkle_root == our_merkle_root
 
-        return chain_block_number
+        return new_merkle_root
 
     # Do a sync upfront (it would be a waste of time to wait for a tx before
     # syncing, as it can take time to traverse all blocks).  Then wait for a tx
     # if requested, and sync again.
-
+    '''
     if wait_tx:
         _do_sync()
         tx_receipt = web3.eth.waitForTransactionReceipt(wait_tx, 10000)
         gas_used = tx_receipt.gasUsed
         status = tx_receipt.status
         print(f"{wait_tx[0:8]}: gasUsed={gas_used}, status={status}")
-
+    '''
     return _do_sync()
 
 
@@ -241,7 +245,7 @@ def find_pub_address_file(base_file: str) -> str:
 
     raise ClickException(f"No public key file {pub_addr_file} or {base_file}")
 
-
+'''
 def create_mixer_client(ctx: ClientConfig) -> MixerClient:
     """
     Create a MixerClient for an existing deployment.
@@ -250,19 +254,32 @@ def create_mixer_client(ctx: ClientConfig) -> MixerClient:
     mixer_desc = load_mixer_description_from_ctx(ctx)
     mixer_instance = mixer_desc.mixer.instantiate(web3)
     return MixerClient.open(web3, ctx.prover_server_endpoint, mixer_instance)
-
+'''
 
 def create_zeth_client_and_mixer_desc(
-        ctx: ClientConfig) -> Tuple[MixerClient, MixerDescription]:
+        ctx: ClientConfig, mixer_addr: str, password: str) -> Tuple[MixerClient, MixerDescription]:
     """
     Create a MixerClient and MixerDescription object, for an existing deployment.
     """
-    web3 = open_web3_from_ctx(ctx)
-    mixer_desc = load_mixer_description_from_ctx(ctx)
-    mixer_instance = mixer_desc.mixer.instantiate(web3)
+    #web3 = open_web3_from_ctx(ctx)
+    #mixer_desc = load_mixer_description_from_ctx(ctx)
+    mixer_instance = Groth16Mixer(mixer_addr)
+    keystore_file = "pyaccount.keystore"
+    mixer_instance.client.keystore_file = "pyaccount.keystore"
+    if os.path.exists(keystore_file) is False:
+        raise ClickException(f"invalid output spec: {keystore_file}")
+    with open(keystore_file, "r") as dump_f:
+        keytext = json.load(dump_f)
+        privkey = Account.decrypt(keytext, password)
+        mixer_instance.client.ecdsa_account = Account.from_key(privkey)
+        keypair = BcosKeyPair()
+        keypair.private_key = mixer_instance.client.ecdsa_account.privateKey
+        keypair.public_key = mixer_instance.client.ecdsa_account.publickey
+        keypair.address = mixer_instance.client.ecdsa_account.address
+        mixer_instance.client.keypair = keypair
     zeth_client = MixerClient.open(
-        web3, ctx.prover_server_endpoint, mixer_instance)
-    return (zeth_client, mixer_desc)
+        ctx.prover_server_endpoint, mixer_instance)
+    return (zeth_client)
 
 
 def zeth_note_short(note_desc: ZethNoteDescription) -> str:
@@ -288,7 +305,7 @@ def parse_output(output_str: str) -> Tuple[ZethAddressPub, EtherValue]:
         raise ClickException(f"invalid output spec: {output_str}")
     return (ZethAddressPub.parse(parts[0]), EtherValue(parts[1]))
 
-
+'''
 def load_eth_address(eth_addr: Optional[str]) -> str:
     """
     Given an --eth-addr command line param, either parse the address, load from
@@ -301,3 +318,4 @@ def load_eth_address(eth_addr: Optional[str]) -> str:
         with open(eth_addr, "r") as eth_addr_f:
             return Web3.toChecksumAddress(eth_addr_f.read().rstrip())
     raise ClickException(f"could find file or parse eth address: {eth_addr}")
+'''

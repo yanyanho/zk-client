@@ -17,7 +17,7 @@ from api.zeth_messages_pb2 import ZethNote
 
 from os import urandom
 from web3 import Web3  # type: ignore
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Any
 
 ZERO_UNITS_HEX = "0000000000000000"
 BOB_DEPOSIT_ETH = 200
@@ -36,16 +36,26 @@ def dump_merkle_tree(mk_tree: List[bytes]) -> None:
     for node in mk_tree:
         print("Node: " + Web3.toHex(node)[2:])
 
+def _event_args_to_mix_result(event_args: Any) -> contracts.MixResult:
+    mix_out_args = zip(event_args.commitments, event_args.ciphertexts)
+    out_events = [contracts.MixOutputEvents(c, ciph) for (c, ciph) in mix_out_args]
+    return contracts.MixResult(
+        new_merkle_root=event_args.root,
+        nullifiers=event_args.nullifiers,
+        output_events=out_events)
 
 def wait_for_tx_update_mk_tree(
         zeth_client: MixerClient,
         mk_tree: MerkleTree,
-        tx_hash: str) -> contracts.MixResult:
-    tx_receipt = zeth_client.web3.eth.waitForTransactionReceipt(tx_hash, 10000)
-    result = contracts.parse_mix_call(zeth_client.mixer_instance, tx_receipt)
+        receipt: Any) -> contracts.MixResult:
+    #tx_receipt = zeth_client.web3.eth.waitForTransactionReceipt(tx_hash, 10000)
+    #result = contracts.parse_mix_call(zeth_client.mixer_instance, tx_receipt)
+    logresult = zeth_client.mixer_instance.data_parser.parse_event_logs(receipt["logs"])
+    print(logresult)
+    log = logresult[0]
+    result = _event_args_to_mix_result(log['eventdata'])
     for out_ev in result.output_events:
         mk_tree.insert(out_ev.commitment)
-
     if mk_tree.recompute_root() != result.new_merkle_root:
         raise Exception("Merkle root mismatch between log and local tree")
     return result
@@ -69,16 +79,16 @@ def bob_deposit(
         (bob_addr, EtherValue(BOB_SPLIT_2_ETH)),
     ]
 
-    tx_hash = zeth_client.deposit(
+    (outputresult, receipt) = zeth_client.deposit(
         mk_tree,
         bob_js_keypair,
         bob_eth_address,
         EtherValue(BOB_DEPOSIT_ETH),
         outputs,
         tx_value)
-    return wait_for_tx_update_mk_tree(zeth_client, mk_tree, tx_hash)
+    return wait_for_tx_update_mk_tree(zeth_client, mk_tree, receipt)
 
-
+'''
 def bob_to_charlie(
         zeth_client: MixerClient,
         mk_tree: MerkleTree,
@@ -459,3 +469,4 @@ def charlie_corrupt_bob_deposit(
         Web3.toWei(BOB_DEPOSIT_ETH, 'ether'),
         DEFAULT_MIX_GAS_WEI)
     return wait_for_tx_update_mk_tree(zeth_client, mk_tree, tx_hash)
+'''

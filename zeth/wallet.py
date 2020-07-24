@@ -73,14 +73,14 @@ class WalletState:
     transaction.
     """
     def __init__(
-            self, next_block: int, num_notes: int, nullifier_map: NullifierMap):
-        self.next_block = next_block
+            self, num_notes: int, nullifier_map: NullifierMap):
+        #self.next_block = next_block
         self.num_notes = num_notes
         self.nullifier_map = nullifier_map
 
     def to_json(self) -> str:
         json_dict = {
-            "next_block": self.next_block,
+            #"next_block": self.next_block,
             "num_notes": self.num_notes,
             "nullifier_map": self.nullifier_map,
         }
@@ -90,14 +90,14 @@ class WalletState:
     def from_json(json_str: str) -> WalletState:
         json_dict = json.loads(json_str)
         return WalletState(
-            next_block=int(json_dict["next_block"]),
+            #next_block=int(json_dict["next_block"]),
             num_notes=int(json_dict["num_notes"]),
             nullifier_map=cast(NullifierMap, json_dict["nullifier_map"]))
 
 
 def _load_state_or_default(state_file: str) -> WalletState:
     if not exists(state_file):
-        return WalletState(1, 0, {})
+        return WalletState(0, {})
     with open(state_file, "r") as state_f:
         return WalletState.from_json(state_f.read())
 
@@ -221,8 +221,8 @@ class Wallet:
     def get_next_block(self) -> int:
         return self.state.next_block
 
-    def update_and_save_state(self, next_block: int) -> None:
-        self.state.next_block = next_block
+    def update_and_save_state(self) -> None:
+        #self.state.next_block = next_block
         _save_state(self.state_file, self.state)
         self._save_merkle_tree_if_changed()
 
