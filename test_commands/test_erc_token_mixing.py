@@ -44,7 +44,6 @@ def print_token_balances(
 
 def approve(
         token_instance: Any,
-        owner_address: str,
         spender_address: str,
         token_amount: int) -> str:
     return token_instance.approve(
@@ -94,7 +93,7 @@ bin = '0x60806040523480156200001157600080fd5b50604051620025a4380380620025a483398
 
 def main() -> None:
 
-    zksnark = zeth.zksnark.get_zksnark_provider(zeth.utils.parse_zksnark_arg())
+    zksnark = zeth.zksnark.get_zksnark_provider("GROTH16")
     #web3, eth = mock.open_test_web3()
     '''
     # Ethereum addresses
@@ -226,6 +225,25 @@ def main() -> None:
     token_si.client.keypair = bob_keypair
     zeth_client.mixer_instance.client.ecdsa_account = bob_ac
     zeth_client.mixer_instance.client.keypair = bob_keypair
+
+    # Bob approves the transfer
+    print("- Bob approves the transfer of ETHToken to the Mixer")
+    token_instance.client.ecdsa_account = bob_ac
+    token_instance.client.keypair = bob_keypair
+    (outputresult, receipt) = approve(
+        token_instance,
+        mixer_address,
+        scenario.BOB_DEPOSIT_ETH)
+    # eth.waitForTransactionReceipt(tx_hash)
+    outputresult = allowance(
+        token_instance,
+        bob_ac.address,
+        mixer_address)
+    print("- The allowance for the Mixer from Bob is:", outputresult)
+    # Bob deposits ETHToken, split in 2 notes on the mixer
+    result_deposit_bob_to_bob = scenario.bob_deposit(
+        zeth_client, mk_tree, bob_ac.address, keystore)
+
     try:
         result_deposit_bob_to_bob = scenario.bob_deposit(
             zeth_client,
@@ -241,22 +259,6 @@ def main() -> None:
         print(f"[ERROR] Bob deposit failed! (msg: {e})")
         print("The allowance for Mixer from Bob is: ", outputresult)
 
-    # Bob approves the transfer
-    print("- Bob approves the transfer of ETHToken to the Mixer")
-    (outputresult, receipt) = approve(
-        token_instance,
-        bob_ac.address,
-        mixer_address,
-        scenario.BOB_DEPOSIT_ETH)
-    #eth.waitForTransactionReceipt(tx_hash)
-    outputresult = allowance(
-        token_instance,
-        bob_ac.address,
-        mixer_address)
-    print("- The allowance for the Mixer from Bob is:", outputresult)
-    # Bob deposits ETHToken, split in 2 notes on the mixer
-    result_deposit_bob_to_bob = scenario.bob_deposit(
-        zeth_client, mk_tree, bob_ac.address, keystore)
 
     print("- Balances after Bob's deposit: ")
     print_token_balances(

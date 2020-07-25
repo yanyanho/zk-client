@@ -86,6 +86,8 @@ def bob_deposit(
         EtherValue(BOB_DEPOSIT_ETH),
         outputs,
         tx_value)
+    print(outputresult)
+    print(receipt)
     return wait_for_tx_update_mk_tree(zeth_client, mk_tree, receipt)
 
 '''
