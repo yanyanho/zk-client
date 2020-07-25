@@ -11,7 +11,6 @@
 .DS_Store
 
 **/*.pyc
-*/*/*/__pycache__/
-*/*/__pycache__/
 */__pycache__/
 *.cpython-37.pyc
+**/*.log
