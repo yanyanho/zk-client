@@ -668,6 +668,7 @@ def joinsplit_sign(
     h.update(proof_bytes)
     h.update(pub_inputs_bytes)
     message_digest = h.digest()
+    print("message digest: ", message_digest)
     return signing.sign(signing_keypair.sk, message_digest)
 
 
