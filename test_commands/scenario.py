@@ -51,7 +51,7 @@ def wait_for_tx_update_mk_tree(
     #tx_receipt = zeth_client.web3.eth.waitForTransactionReceipt(tx_hash, 10000)
     #result = contracts.parse_mix_call(zeth_client.mixer_instance, tx_receipt)
     logresult = zeth_client.mixer_instance.data_parser.parse_event_logs(receipt["logs"])
-    print(logresult)
+    print("logresult： ", logresult)
     log = logresult[0]
     result = _event_args_to_mix_result(log['eventdata'])
     for out_ev in result.output_events:
@@ -86,8 +86,8 @@ def bob_deposit(
         EtherValue(BOB_DEPOSIT_ETH),
         outputs,
         tx_value)
-    print(outputresult)
-    print(receipt)
+    # print(outputresult)
+    print("receipt: ", receipt)
     return wait_for_tx_update_mk_tree(zeth_client, mk_tree, receipt)
 
 '''
