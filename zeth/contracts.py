@@ -208,9 +208,9 @@ def mix_parameters_as_contract_arguments(
     """
     proof_params: List[Any] = zksnark.mixer_proof_parameters(
         mix_parameters.extended_proof)
-    print("signature_vk ppk : ", mix_parameters.signature_vk.ppk)
-    print("signature_vk spk: ", mix_parameters.signature_vk.spk)
-    print("signature: ", mix_parameters.signature)
+    # print("signature_vk ppk : ", mix_parameters.signature_vk.ppk)
+    # print("signature_vk spk: ", mix_parameters.signature_vk.spk)
+    # print("signature: ", mix_parameters.signature)
     proof_params.extend([
         verification_key_as_mix_parameter(mix_parameters.signature_vk),
         signature_as_mix_parameter(mix_parameters.signature),

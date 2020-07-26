@@ -87,7 +87,7 @@ def bob_deposit(
         outputs,
         tx_value)
     # print(outputresult)
-    print("receipt: ", receipt)
+    print("receipt status: ", receipt['status'])
     return wait_for_tx_update_mk_tree(zeth_client, mk_tree, receipt)
 
 '''

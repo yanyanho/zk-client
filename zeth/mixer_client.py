@@ -195,8 +195,8 @@ def write_verification_key(vk_json: GenericVerificationKey) -> None:
     """
     Writes the verification key (object) in a json file
     """
-    setup_dir = get_trusted_setup_dir()
-    filename = os.path.join(setup_dir, "vk.json")
+    #setup_dir = get_trusted_setup_dir()
+    filename = "vk.json"
     with open(filename, 'w') as outfile:
         json.dump(vk_json, outfile)
 
@@ -668,7 +668,7 @@ def joinsplit_sign(
     h.update(proof_bytes)
     h.update(pub_inputs_bytes)
     message_digest = h.digest()
-    print("message digest: ", message_digest)
+    #print("message digest: ", message_digest)
     return signing.sign(signing_keypair.sk, message_digest)
 
 
