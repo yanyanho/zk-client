@@ -517,6 +517,6 @@ def code_gen(abi_file):
     template = codegen.gen_all()
     name = codegen.name + '.py'
     # outputfile = os.path.join("./contract/mixer/abi/", )
-    fo = open("./contract/mixer/abi/Groth16Mixer.python", "w")
+    fo = open("./contract/mixer/abi/Groth16Mixer.py", "w")
     fo.write(template)
     fo.close()
