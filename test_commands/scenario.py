@@ -106,7 +106,7 @@ def bob_deposit(
     print("receipt status: ", receipt['status'])
     return wait_for_tx_update_mk_tree(zeth_client, mk_tree, receipt)
 
-'''
+
 def bob_to_charlie(
         zeth_client: MixerClient,
         mk_tree: MerkleTree,
@@ -487,4 +487,3 @@ def charlie_corrupt_bob_deposit(
         Web3.toWei(BOB_DEPOSIT_ETH, 'ether'),
         DEFAULT_MIX_GAS_WEI)
     return wait_for_tx_update_mk_tree(zeth_client, mk_tree, tx_hash)
-'''
