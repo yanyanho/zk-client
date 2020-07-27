@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: LGPL-3.0+
 
 from __future__ import annotations
-from commands.constants import WALLET_USERNAME, ETH_ADDRESS_DEFAULT
+from commands.constants import WALLET_USERNAME
 from zeth.zeth_address import ZethAddressPub, ZethAddressPriv, ZethAddress
 from zeth.contracts import \
-    InstanceDescription, get_block_number, get_mix_results, compile_files
+    get_mix_results
 from zeth.mixer_client import MixerClient
 from zeth.utils import \
     short_commitment, EtherValue, get_zeth_dir, from_zeth_units
@@ -16,8 +16,9 @@ import json
 from os.path import exists, join
 from typing import Dict, Tuple, Optional, Callable, Any
 #from web3 import Web3  # type: ignore
-from Groth16Mixer import Groth16Mixer
-from bac import bac
+from contract.Groth16Mixer import Groth16Mixer
+from contract.ERC20Mintable import ERC20Mintable
+
 from python_web3.client.bcoskeypair import BcosKeyPair #todo
 
 
@@ -190,24 +191,24 @@ def do_sync(
             #new_merkle_root: Optional[bytes] = None
 
             #print(f"SYNCHING blocks ({wallet_next_block} - {chain_block_number})")
-            mixer_instance = wallet.mixer_instance
-            for mix_result in get_mix_results(
-                    mixer_instance, receipt):
-                new_merkle_root = mix_result.new_merkle_root
-                for note_desc in wallet.receive_notes(mix_result.output_events):
-                    if callback:
-                        callback(note_desc)
+        mixer_instance = wallet.mixer_instance
+        for mix_result in get_mix_results(
+                mixer_instance, receipt):
+            new_merkle_root = mix_result.new_merkle_root
+            for note_desc in wallet.receive_notes(mix_result.output_events):
+                if callback:
+                    callback(note_desc)
 
-                spent_commits = wallet.mark_nullifiers_used(mix_result.nullifiers)
-                for commit in spent_commits:
-                    print(f"    SPENT: {commit}")
+            spent_commits = wallet.mark_nullifiers_used(mix_result.nullifiers)
+            for commit in spent_commits:
+                print(f"    SPENT: {commit}")
 
-            wallet.update_and_save_state()
+        wallet.update_and_save_state()
 
             # Check merkle root and save the updated tree
-            if new_merkle_root:
-                our_merkle_root = wallet.merkle_tree.get_root()
-                assert new_merkle_root == our_merkle_root
+        if new_merkle_root:
+            our_merkle_root = wallet.merkle_tree.get_root()
+            assert new_merkle_root == our_merkle_root
 
         return new_merkle_root
 

@@ -7,7 +7,7 @@ from zeth.utils import EtherValue
 from click import Context, command, option, pass_context
 import sys
 sys.path.append('../')
-from Groth16Mixer import Groth16Mixer
+from contract.Groth16Mixer import Groth16Mixer
 
 @command()
 @option("--mixer-addr", help="The Groth16Mixer contract address you want to use")
