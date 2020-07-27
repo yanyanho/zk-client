@@ -172,6 +172,7 @@ def main() -> None:
     client.ecdsa_account = deployer_ac
     client.keypair = deployer_keypair
     mixer_interface = scenario.compile_mixer()
+    # scenario.code_gen("Groth16Mixer.abi")
     mixerTransactionRecipient = client.sendRawTransactionGetReceipt("", mixer_interface['abi'], None, constructArgs, mixer_interface['bin'], 30000000, 15)
     print("mixerTransactionRecipient: ", mixerTransactionRecipient)
     mixer_address = mixerTransactionRecipient['contractAddress']

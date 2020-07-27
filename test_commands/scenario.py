@@ -3,7 +3,9 @@
 # Copyright (c) 2015-2020 Clearmatics Technologies Ltd
 #
 # SPDX-License-Identifier: LGPL-3.0+
+import os
 
+from python_web3.codegen import ABICodegen
 from zeth.mixer_client import MixerClient, OwnershipKeyPair, joinsplit_sign, \
     encrypt_notes, get_dummy_input_and_address, compute_h_sig, \
     JoinsplitSigVerificationKey
@@ -502,10 +504,19 @@ def compile_mixer() -> Interface:
     set_solc_version(SOL_COMPILER_VERSION)
     compiled_sol = compile_files([path_to_token], allow_paths=allowed_path)
     mixer_interface = compiled_sol[path_to_token + ":Groth16Mixer"]
-    fo = open("./contract/mixer/abi/Groth16Mixer.abi", "w")
-    fo1 = open("./contract/mixer/abi/Groth16Mixer.bin", "w")
-    fo.write(str(mixer_interface["abi"]))
-    fo.close()
-    fo1.write(str(mixer_interface["bin"]))
-    fo1.close()
+    # fo = open("./contract/mixer/abi/Groth16Mixer.abi", "w")
+    # fo1 = open("./contract/mixer/abi/Groth16Mixer.bin", "w")
+    # fo.write(str(mixer_interface["abi"]))
+    # fo.close()
+    # fo1.write(str(mixer_interface["bin"]))
+    # fo1.close()
     return mixer_interface
+
+def code_gen(abi_file):
+    codegen = ABICodegen("./contract/mixer/abi/"+abi_file)
+    template = codegen.gen_all()
+    name = codegen.name + '.py'
+    # outputfile = os.path.join("./contract/mixer/abi/", )
+    fo = open("./contract/mixer/abi/Groth16Mixer.python", "w")
+    fo.write(template)
+    fo.close()

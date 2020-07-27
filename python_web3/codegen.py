@@ -15,8 +15,8 @@
 '''
 
 import sys
-from client.datatype_parser import DatatypeParser
-from utils.abi import (
+from python_web3.client.datatype_parser import DatatypeParser
+from python_web3.utils.abi import (
     filter_by_type
 )
 import os
@@ -30,7 +30,7 @@ class ABICodegen:
     # four spaces for indent
     indent = "    "
     template = ""
-    template_file = "client/codegen_template.py"
+    template_file = "./python_web3/client/codegen_template.py"
 
     def __init__(self, abi_file):
         if len(abi_file) > 0:
