@@ -106,7 +106,7 @@ NUM_INPUT_DIGESTS: int = (2 * JS_INPUTS) + 1
 TOTAL_DIGEST_RESIDUAL_BITS: int = NUM_INPUT_DIGESTS * DIGEST_RESIDUAL_BITS
 
 # Solidity compiler version
-SOL_COMPILER_VERSION: str = 'v0.5.16'
+SOL_COMPILER_VERSION: str = 'v0.5.17'
 
 # Seed for MIMC
 MIMC_MT_SEED: str = "clearmatics_mt_seed"

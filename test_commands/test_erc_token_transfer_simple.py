@@ -171,7 +171,8 @@ def main() -> None:
     client = BcosClient()
     client.ecdsa_account = deployer_ac
     client.keypair = deployer_keypair
-    mixerTransactionRecipient = client.sendRawTransactionGetReceipt("", abi5, None, constructArgs, bin5, 30000000, 15)
+    mixer_interface = scenario.compile_mixer()
+    mixerTransactionRecipient = client.sendRawTransactionGetReceipt("", mixer_interface['abi'], None, constructArgs, mixer_interface['bin'], 30000000, 15)
     print("mixerTransactionRecipient: ", mixerTransactionRecipient)
     mixer_address = mixerTransactionRecipient['contractAddress']
     mixer_instance = Groth16Mixer(mixer_address)

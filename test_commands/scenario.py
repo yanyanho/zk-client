@@ -14,7 +14,13 @@ from zeth.merkle_tree import MerkleTree, compute_merkle_path
 from zeth.utils import EtherValue, to_zeth_units
 import test_commands.mock as mock
 from api.zeth_messages_pb2 import ZethNote
-
+from zeth.contracts import Interface
+from zeth.utils import get_zeth_dir
+from zeth.constants import SOL_COMPILER_VERSION
+from click import command, argument
+from os.path import join
+from solcx import compile_files, set_solc_version
+from typing import Any
 from os import urandom
 from web3 import Web3  # type: ignore
 from typing import List, Tuple, Optional, Any
@@ -487,3 +493,19 @@ def charlie_corrupt_bob_deposit(
         Web3.toWei(BOB_DEPOSIT_ETH, 'ether'),
         DEFAULT_MIX_GAS_WEI)
     return wait_for_tx_update_mk_tree(zeth_client, mk_tree, tx_hash)
+
+
+def compile_mixer() -> Interface:
+    allowed_path ="./contract/mixer"
+    path_to_token = "./contract/mixer/Groth16Mixer.sol"
+    # Compilation
+    set_solc_version(SOL_COMPILER_VERSION)
+    compiled_sol = compile_files([path_to_token], allow_paths=allowed_path)
+    mixer_interface = compiled_sol[path_to_token + ":Groth16Mixer"]
+    fo = open("./contract/mixer/abi/Groth16Mixer.abi", "w")
+    fo1 = open("./contract/mixer/abi/Groth16Mixer.bin", "w")
+    fo.write(str(mixer_interface["abi"]))
+    fo.close()
+    fo1.write(str(mixer_interface["bin"]))
+    fo1.close()
+    return mixer_interface
