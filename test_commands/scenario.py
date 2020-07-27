@@ -44,6 +44,20 @@ def _event_args_to_mix_result(event_args: Any) -> contracts.MixResult:
         nullifiers=event_args.nullifiers,
         output_events=out_events)
 
+
+class LogMixEvent(object):
+    def __init__(
+            self,
+            root: bytes,
+            nullifiers: bytes(2),
+            commitments: bytes(2),
+            ciphertexts: bytes(2)):
+        self.root = root
+        self.nullifiers = nullifiers
+        self.commitments = commitments
+        self.ciphertexts = ciphertexts
+
+
 def wait_for_tx_update_mk_tree(
         zeth_client: MixerClient,
         mk_tree: MerkleTree,
@@ -52,8 +66,10 @@ def wait_for_tx_update_mk_tree(
     #result = contracts.parse_mix_call(zeth_client.mixer_instance, tx_receipt)
     logresult = zeth_client.mixer_instance.data_parser.parse_event_logs(receipt["logs"])
     print("logresult： ", logresult)
-    log = logresult[0]
-    result = _event_args_to_mix_result(log['eventdata'])
+
+    logMix = logresult[0]['eventdata']
+    logMixEvent = LogMixEvent(logMix[0],logMix[1], logMix[2], logMix[3])
+    result = _event_args_to_mix_result(logMixEvent)
     for out_ev in result.output_events:
         mk_tree.insert(out_ev.commitment)
     if mk_tree.recompute_root() != result.new_merkle_root:

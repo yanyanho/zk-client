@@ -1,0 +1,10 @@
+{
+    "note": {
+        "a_pk": "40e88c7134d06c9b45e1cd533aa35cb577d87054b778feaf8265636633ca2b21",
+        "value": "0000000005f5e100",
+        "rho": "c62ce91d5244614f5458207760014f9cd02a47100a16f3e93da688fd9999458d",
+        "trap_r": "9eb92501c375110808bdce938712f16f84b543a8eddbd82a623bd4efe1e8d7a5"
+    },
+    "address": "1",
+    "commitment": "11768cf710c0963e9074aff5cb858709c7d092b47e3b45ac6ac2f858848a65cd"
+}

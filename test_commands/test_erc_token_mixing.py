@@ -250,22 +250,6 @@ def main() -> None:
     result_deposit_bob_to_bob = scenario.bob_deposit(
         zeth_client, mk_tree, bob_ac.address, keystore, zeth.utils.EtherValue(0))
 
-    # try:
-    #     result_deposit_bob_to_bob = scenario.bob_deposit(
-    #         zeth_client,
-    #         mk_tree,
-    #         bob_ac.address,
-    #         keystore,
-    #         zeth.utils.EtherValue(0))
-    # except Exception as e:
-    #     outputresult = allowance(
-    #         token_instance,
-    #         bob_ac.address,
-    #         mixer_address)
-    #     print(f"[ERROR] Bob deposit failed! (msg: {e})")
-    #     print("The allowance for Mixer from Bob is: ", outputresult)
-
-
     print("- Balances after Bob's deposit: ")
     print_token_balances(
         token_instance,

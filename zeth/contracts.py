@@ -275,7 +275,7 @@ def mix(
     '''
     return _create_web3_mixer_call(zksnark, mixer_instance, mix_parameters)
 
-'''
+
 def parse_mix_call(
         mixer_instance: Any,
         _tx_receipt: str) -> MixResult:
@@ -286,7 +286,7 @@ def parse_mix_call(
     log_mix_events = log_mix_filter.get_all_entries()
     mix_results = [_event_args_to_mix_result(ev.args) for ev in log_mix_events]
     return mix_results[0]
-'''
+
 
 def _next_nullifier_or_none(nullifier_iter: Iterator[bytes]) -> Optional[Any]:
     try:
