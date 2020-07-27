@@ -127,7 +127,7 @@ def bob_to_charlie(
     output1 = (charlie_addr, EtherValue(BOB_TO_CHARLIE_CHANGE_ETH))
 
     # Send the tx
-    tx_hash = zeth_client.joinsplit(
+    (outputresult, receipt) = zeth_client.joinsplit(
         mk_tree,
         OwnershipKeyPair(bob_ask, bob_addr.a_pk),
         bob_eth_address,
@@ -136,7 +136,7 @@ def bob_to_charlie(
         EtherValue(0),
         EtherValue(0),
         EtherValue(1, 'wei'))
-    return wait_for_tx_update_mk_tree(zeth_client, mk_tree, tx_hash)
+    return wait_for_tx_update_mk_tree(zeth_client, mk_tree, receipt)
 
 
 def charlie_withdraw(
@@ -155,7 +155,7 @@ def charlie_withdraw(
     charlie_ownership_key = \
         OwnershipKeyPair(charlie_ask, charlie_apk)
 
-    tx_hash = zeth_client.joinsplit(
+    (outputresult, receipt)  = zeth_client.joinsplit(
         mk_tree,
         charlie_ownership_key,
         charlie_eth_address,
@@ -164,7 +164,7 @@ def charlie_withdraw(
         EtherValue(0),
         EtherValue(CHARLIE_WITHDRAW_ETH),
         EtherValue(1, 'wei'))
-    return wait_for_tx_update_mk_tree(zeth_client, mk_tree, tx_hash)
+    return wait_for_tx_update_mk_tree(zeth_client, mk_tree, receipt)
 
 
 def charlie_double_withdraw(

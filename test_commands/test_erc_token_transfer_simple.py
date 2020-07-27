@@ -227,8 +227,8 @@ def main() -> None:
 
     # Bob tries to deposit ETHToken, split in 2 notes on the mixer (without
     # approving)
-    token_si.client.ecdsa_account = bob_ac
-    token_si.client.keypair = bob_keypair
+    # token_si.client.ecdsa_account = bob_ac
+    # token_si.client.keypair = bob_keypair
     zeth_client.mixer_instance.client.ecdsa_account = bob_ac
     zeth_client.mixer_instance.client.keypair = bob_keypair
 
@@ -267,6 +267,7 @@ def main() -> None:
     assert(len(recovered_notes_alice) == 0), \
         "Alice decrypted a ciphertext that was not encrypted with her key!"
 
+    #*****************************************************
     # Bob does a transfer of ETHToken to Charlie on the mixer
 
     # Bob decrypts one of the note he previously received (useless here but
@@ -282,7 +283,7 @@ def main() -> None:
         zeth_client,
         mk_tree,
         input_bob_to_charlie,
-        bob_ac,
+        bob_ac.address,
         keystore)
 
     received_notes = _receive_notes(
@@ -291,19 +292,32 @@ def main() -> None:
     assert (len(note_descs_charlie) == 1), \
         f"Charlie decrypted {len(note_descs_charlie)}.  Expected 1!"
 
+    print("- Balances after Bob's transfer: ")
+    print_token_balances(
+        token_instance,
+        bob_ac.address,
+        alice_ac.address,
+        charlie_ac.address,
+        zeth_client.mixer_instance.address
+    )
+
+    zeth_client.mixer_instance.client.ecdsa_account = charlie_ac
+    zeth_client.mixer_instance.client.keypair = charlie_keypair
+
+    # *****************************************************
     _ = scenario.charlie_withdraw(
         zeth_client,
         mk_tree,
         note_descs_charlie[0].as_input(),
-        charlie_ac,
+        charlie_ac.address,
         keystore)
 
     print("- Balances after Charlie's withdrawal: ")
     print_token_balances(
         token_instance,
-        bob_ac,
-        alice_ac,
-        charlie_ac,
+        bob_ac.address,
+        alice_ac.address,
+        charlie_ac.address,
         zeth_client.mixer_instance.address
     )
 
