@@ -12,14 +12,14 @@
   @date: 2019-06
 '''
 
-from client.bcosclient import BcosClient
-from client.datatype_parser import DatatypeParser
+from python_web3.client.bcosclient import BcosClient
+from python_web3.client.datatype_parser import DatatypeParser
 import uuid
 import json
 import threading
-from utils.encoding import FriendlyJsonSerde
-from client.channelpack import ChannelPack
-from client.channel_push_dispatcher import ChannelPushHandler
+from python_web3.utils.encoding import FriendlyJsonSerde
+from python_web3.client.channelpack import ChannelPack
+from python_web3.client.channel_push_dispatcher import ChannelPushHandler
 
 
 class EventCallbackHandler:

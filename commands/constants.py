@@ -15,6 +15,6 @@ ADDRESS_FILE_DEFAULT = "zeth-address.json"
 #INSTANCE_FILE_DEFAULT = "zeth-instance.json"
 #ETH_ADDRESS_DEFAULT = "eth-address"
 
-WALLET_DIR_DEFAULT = "./wallet"
+WALLET_DIR_DEFAULT = "wallet"
 WALLET_USERNAME = "zbac"
 USER_DIR = "user"
