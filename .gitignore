@@ -16,4 +16,4 @@
 **/*.log
 _test_notes
 **/logs
-user/
+user
