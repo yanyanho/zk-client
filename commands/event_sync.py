@@ -57,8 +57,6 @@ def make_wallet() -> List[Wallet]:
     wallet_list = []
     for username in os.listdir(USER_DIR):
         wallet_dir = "{}/{}/{}".format(USER_DIR, username, WALLET_DIR_DEFAULT)
-        if os.path.exists(wallet_dir) is False:
-            raise ClickException(f"invalid wallet_dir: {wallet_dir}")
         zeth_address = load_zeth_address(username)
         wallet_list.append(Wallet(None, username, wallet_dir, zeth_address.addr_sk))
     return wallet_list
@@ -83,7 +81,9 @@ class EventCallbackImpl(EventCallbackHandler):
         print("new_merkle_root in log: ", new_merkle_root)
         for wallet in make_wallet():
             received_notes = wallet.receive_notes(mix_result.output_events)
-            print(f"{wallet.username} received notes:  {received_notes}")
+            spent_commits = wallet.mark_nullifiers_used(mix_result.nullifiers)
+            for commit in spent_commits:
+                print(f"{wallet.username} spent commits:  {commit}")
             wallet.update_and_save_state()
             update_merkle_root = wallet.merkle_tree.get_root()
             print(f"The update_merkle_root in wallet of {wallet.username} is {update_merkle_root}")
