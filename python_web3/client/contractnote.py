@@ -11,7 +11,7 @@
   @author: kentzhang
   @date: 2019-06
 '''
-from client_config import client_config
+from python_web3.client_config import client_config
 from configobj import ConfigObj
 import time
 import os

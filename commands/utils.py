@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: LGPL-3.0+
 
 from __future__ import annotations
-from commands.constants import WALLET_USERNAME, ETH_ADDRESS_DEFAULT
+from commands.constants import WALLET_USERNAME, FISCO_ADDRESS_FILE, USER_DIR, ADDRESS_FILE_DEFAULT, WALLET_DIR_DEFAULT
 from zeth.zeth_address import ZethAddressPub, ZethAddressPriv, ZethAddress
 from zeth.contracts import \
-    InstanceDescription, get_block_number, get_mix_results, compile_files
+    get_mix_results
 from zeth.mixer_client import MixerClient
 from zeth.utils import \
     short_commitment, EtherValue, get_zeth_dir, from_zeth_units
@@ -16,8 +16,9 @@ import json
 from os.path import exists, join
 from typing import Dict, Tuple, Optional, Callable, Any
 #from web3 import Web3  # type: ignore
-from Groth16Mixer import Groth16Mixer
-from bac import bac
+from contract.Groth16Mixer import Groth16Mixer
+from contract.ERC20Mintable import ERC20Mintable
+from python_web3.eth_account.account import Account
 from python_web3.client.bcoskeypair import BcosKeyPair #todo
 
 
@@ -110,15 +111,16 @@ def load_mixer_description_from_ctx(ctx: ClientConfig) -> MixerDescription:
     return load_mixer_description(ctx.instance_file)
 '''
 
-def get_zeth_address_file(ctx: ClientConfig) -> str:
-    return ctx.address_file
+def get_zeth_address_file(username: str) -> str:
+    addr_file = "{}/{}/{}".format(USER_DIR, username, ADDRESS_FILE_DEFAULT)
+    return addr_file
 
 
-def load_zeth_address_public(ctx: ClientConfig) -> ZethAddressPub:
+def load_zeth_address_public(username: str) -> ZethAddressPub:
     """
     Load a ZethAddressPub from a key file.
     """
-    secret_key_file = get_zeth_address_file(ctx)
+    secret_key_file = get_zeth_address_file(username)
     pub_addr_file = pub_address_file(secret_key_file)
     with open(pub_addr_file, "r") as pub_addr_f:
         return ZethAddressPub.parse(pub_addr_f.read())
@@ -133,11 +135,11 @@ def write_zeth_address_public(
         pub_addr_f.write(str(pub_addr))
 
 
-def load_zeth_address_secret(ctx: ClientConfig) -> ZethAddressPriv:
+def load_zeth_address_secret(username: str) -> ZethAddressPriv:
     """
     Read ZethAddressPriv
     """
-    addr_file = get_zeth_address_file(ctx)
+    addr_file = get_zeth_address_file(username)
     with open(addr_file, "r") as addr_f:
         return ZethAddressPriv.from_json(addr_f.read())
 
@@ -151,32 +153,31 @@ def write_zeth_address_secret(
         addr_f.write(secret_addr.to_json())
 
 
-def load_zeth_address(ctx: ClientConfig) -> ZethAddress:
+def load_zeth_address(username: str) -> ZethAddress:
     """
     Load a ZethAddress secret from a file, and the associated public address,
     and return as a ZethAddress.
     """
     return ZethAddress.from_secret_public(
-        load_zeth_address_secret(ctx),
-        load_zeth_address_public(ctx))
+        load_zeth_address_secret(username),
+        load_zeth_address_public(username))
 
 
 def open_wallet(
         mixer_instance: Any,
         js_secret: ZethAddressPriv,
-        ctx: ClientConfig) -> Wallet:
+        username: str
+        ) -> Wallet:
     """
     Load a wallet using a secret key.
     """
-    wallet_dir = ctx.wallet_dir
+    wallet_dir = "{}/{}/{}".format(USER_DIR, username, WALLET_DIR_DEFAULT)
     return Wallet(mixer_instance, WALLET_USERNAME, wallet_dir, js_secret)
 
 
 def do_sync(
-        #web3: Any,
         wallet: Wallet,
         receipt: Any,
-        #wait_tx: Optional[str],
         callback: Optional[Callable[[ZethNoteDescription], None]] = None) -> int:
     """
     Implementation of sync, reused by several commands.  Returns the
@@ -190,24 +191,23 @@ def do_sync(
             #new_merkle_root: Optional[bytes] = None
 
             #print(f"SYNCHING blocks ({wallet_next_block} - {chain_block_number})")
-            mixer_instance = wallet.mixer_instance
-            for mix_result in get_mix_results(
-                    mixer_instance, receipt):
-                new_merkle_root = mix_result.new_merkle_root
-                for note_desc in wallet.receive_notes(mix_result.output_events):
-                    if callback:
-                        callback(note_desc)
+        mixer_instance = wallet.mixer_instance
+        mix_result = get_mix_results(mixer_instance, receipt)
+        new_merkle_root = mix_result.new_merkle_root
+        for note_desc in wallet.receive_notes(mix_result.output_events):
+            if callback:
+                callback(note_desc)
 
-                spent_commits = wallet.mark_nullifiers_used(mix_result.nullifiers)
-                for commit in spent_commits:
-                    print(f"    SPENT: {commit}")
+        spent_commits = wallet.mark_nullifiers_used(mix_result.nullifiers)
+        for commit in spent_commits:
+            print(f"    SPENT: {commit}")
 
-            wallet.update_and_save_state()
+        wallet.update_and_save_state()
 
             # Check merkle root and save the updated tree
-            if new_merkle_root:
-                our_merkle_root = wallet.merkle_tree.get_root()
-                assert new_merkle_root == our_merkle_root
+        if new_merkle_root:
+            our_merkle_root = wallet.merkle_tree.get_root()
+            assert new_merkle_root == our_merkle_root
 
         return new_merkle_root
 
@@ -257,16 +257,15 @@ def create_mixer_client(ctx: ClientConfig) -> MixerClient:
 '''
 
 def create_zeth_client_and_mixer_desc(
-        ctx: ClientConfig, mixer_addr: str, password: str) -> Tuple[MixerClient, MixerDescription]:
+        prover_server_endpoint: str, mixer_addr: str, username: str, password: str) -> Tuple[MixerClient, MixerDescription]:
     """
     Create a MixerClient and MixerDescription object, for an existing deployment.
     """
     #web3 = open_web3_from_ctx(ctx)
     #mixer_desc = load_mixer_description_from_ctx(ctx)
     mixer_instance = Groth16Mixer(mixer_addr)
-    keystore_file = "pyaccount.keystore"
-    mixer_instance.client.keystore_file = "pyaccount.keystore"
-    if os.path.exists(keystore_file) is False:
+    keystore_file = "{}/{}/{}".format(USER_DIR, username, FISCO_ADDRESS_FILE)
+    if exists(keystore_file) is False:
         raise ClickException(f"invalid output spec: {keystore_file}")
     with open(keystore_file, "r") as dump_f:
         keytext = json.load(dump_f)
@@ -278,7 +277,7 @@ def create_zeth_client_and_mixer_desc(
         keypair.address = mixer_instance.client.ecdsa_account.address
         mixer_instance.client.keypair = keypair
     zeth_client = MixerClient.open(
-        ctx.prover_server_endpoint, mixer_instance)
+        prover_server_endpoint, mixer_instance)
     return (zeth_client)
 
 
