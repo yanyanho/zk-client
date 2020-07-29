@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: LGPL-3.0+
 
 from __future__ import annotations
-from commands.constants import WALLET_USERNAME, FISCO_ADDRESS_FILE, USER_DIR, ADDRESS_FILE_DEFAULT, WALLET_DIR_DEFAULT
+from commands.constants import FISCO_ADDRESS_FILE, USER_DIR, ADDRESS_FILE_DEFAULT, WALLET_DIR_DEFAULT
 from zeth.zeth_address import ZethAddressPub, ZethAddressPriv, ZethAddress
 from zeth.contracts import \
     get_mix_results
@@ -172,7 +172,7 @@ def open_wallet(
     Load a wallet using a secret key.
     """
     wallet_dir = "{}/{}/{}".format(USER_DIR, username, WALLET_DIR_DEFAULT)
-    return Wallet(mixer_instance, WALLET_USERNAME, wallet_dir, js_secret)
+    return Wallet(mixer_instance, username, wallet_dir, js_secret)
 
 
 def do_sync(
