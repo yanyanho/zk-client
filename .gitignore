@@ -15,3 +15,4 @@
 *.cpython-37.pyc
 **/*.log
 _test_notes
+**/logs
