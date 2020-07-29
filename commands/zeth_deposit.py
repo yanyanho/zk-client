@@ -68,7 +68,7 @@ def deposit(
         outputs,
         tx_value)
 
-    print("receipt output :", outputresult)
+    print("receipt status: ", receipt['status'])
     #do_sync(wallet, receipt)
 if __name__ == '__main__':
     deposit()
