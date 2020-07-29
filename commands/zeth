@@ -36,7 +36,7 @@ def help(ctx: Context) -> None:
 @option(
     "--eth-rpc",
     default=FISCO_RPC_ENDPOINT_DEFAULT,
-    help=f"Ethereum rpc end-point")
+    help=f"Fisco-Bcos rpc end-point")
 @option(
     "--prover-server",
     default=PROVER_SERVER_ENDPOINT_DEFAULT,

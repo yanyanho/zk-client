@@ -275,6 +275,17 @@ def mix(
     '''
     return _create_web3_mixer_call(zksnark, mixer_instance, mix_parameters)
 
+class LogMixEvent(object):
+    def __init__(
+            self,
+            root: bytes,
+            nullifiers: bytes(2),
+            commitments: bytes(2),
+            ciphertexts: bytes(2)):
+        self.root = root
+        self.nullifiers = nullifiers
+        self.commitments = commitments
+        self.ciphertexts = ciphertexts
 
 def parse_mix_call(
         mixer_instance: Any,
@@ -323,7 +334,7 @@ def get_mix_results(
             web3.eth.uninstallFilter(log_mix_filter.filter_id)
     '''
     logresult = mixer_instance.data_parser.parse_event_logs(receipt["logs"])
-    for log in logresult:
-        if log['eventname'] == 'LogMix':
-            yield _event_args_to_mix_result(log['eventdata'])
+    logMix = logresult[0]['eventdata']
+    logMixEvent = LogMixEvent(logMix[0],logMix[1], logMix[2], logMix[3])
+    result = _event_args_to_mix_result(logMixEvent)
 

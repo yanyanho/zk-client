@@ -9,16 +9,20 @@ sys.path.append('../')
 from contract.Groth16Mixer import Groth16Mixer
 from contract.ERC20Mintable import ERC20Mintable
 from python_web3.eth_account.account import Account
+from python_web3.client.bcoskeypair import BcosKeyPair
+from commands.constants import USER_DIR, FISCO_ADDRESS_FILE
+import json
+from os.path import exists
 
 @command()
 @argument("tokens")
 #@option("--eth-addr", help="Sender eth address or address filename")
-@option("--wait", is_flag=True, help="Wait for transaction to complete")
+#@option("--wait", is_flag=True, help="Wait for transaction to complete")
 @option("--mixer-addr", help="The Groth16Mixer contract address you want to use")
-@option("--ERC20Mintable-addr", help="The Groth16Mixer contract address you want to use")
+@option("--token-addr", help="The Groth16Mixer contract address you want to use")
+@option("--username", help="the username you create before")
 @option("--password", help="the password of you keystore")
-@pass_context
-def token_approve(ctx: Context, tokens: str, mixer_addr: str, ERC20Mintable_addr: str, password: str, wait: bool) -> None:
+def token_approve(tokens: str, mixer_addr: str, token_addr: str, username: str, password: str) -> None:
     """
     Approve the mixer to spend some amount of tokens
     """
@@ -30,10 +34,9 @@ def token_approve(ctx: Context, tokens: str, mixer_addr: str, ERC20Mintable_addr
     #if not mixer_desc.token:
     #    raise ClickException("no token for mixer {mixer_desc.mixer.address}")
 
-    token_instance = ERC20Mintable(ERC20Mintable_addr)
-    keystore_file = "pyaccount.keystore"
-    token_instance.client.keystore_file = "pyaccount.keystore"
-    if os.path.exists(keystore_file) is False:
+    token_instance = ERC20Mintable(token_addr)
+    keystore_file = "{}/{}/{}".format(USER_DIR, username, FISCO_ADDRESS_FILE)
+    if exists(keystore_file) is False:
         raise ClickException(f"invalid output spec: {keystore_file}")
     with open(keystore_file, "r") as dump_f:
         keytext = json.load(dump_f)
@@ -44,8 +47,12 @@ def token_approve(ctx: Context, tokens: str, mixer_addr: str, ERC20Mintable_addr
         keypair.public_key = token_instance.client.ecdsa_account.publickey
         keypair.address = token_instance.client.ecdsa_account.address
         token_instance.client.keypair = keypair
-    (outputresult, receipt) = token_instance.approve(
+    print(f"- {username} approves the transfer of ERC20Token to the Mixer")
+    token_instance.approve(
         mixer_addr,
         approve_value.wei)
+    outputresult = token_instance.allowance(token_instance.client.ecdsa_account.address, mixer_addr)
+    print(f"- The allowance for the Mixer from {username} is: {outputresult}")
 
-    print("receipt output :", outputresult)
+if __name__ == '__main__':
+    token_approve()
