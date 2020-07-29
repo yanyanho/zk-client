@@ -18,22 +18,20 @@ from contract.Groth16Mixer import Groth16Mixer
 from zeth.prover_client import ProverClient
 from zeth.mixer_client import write_verification_key
 from zeth.zksnark import get_zksnark_provider
-
+from commands.constants import PROVER_SERVER_ENDPOINT_DEFAULT
 
 
 @command()
 #@option("--eth-addr", help="Sender eth address or address filename")
 @option("--token-address", help="Address of token contract (if used)")
-@pass_context
 def deploy(
-        ctx: Context,
         token_address: Optional[str]
         ) -> None:
     """
     Deploy the zeth contracts and record the instantiation details.
     """
     zksnark = get_zksnark_provider("GROTH16")
-    prover_client = ProverClient(ctx.obj.prover_server_endpoint)
+    prover_client = ProverClient(PROVER_SERVER_ENDPOINT_DEFAULT)
     vk_obj = prover_client.get_verification_key()
     vk_json = zksnark.parse_verification_key(vk_obj)
     #print("VK.json: ", vk_json)
@@ -52,4 +50,8 @@ def deploy(
     mixer_address = mixerTransactionRecipient['contractAddress']
     print(f"deploy: mixer_address={mixer_address}")
     #mixer_instance = Groth16Mixer(address)
+
+
+if __name__ == '__main__':
+    deploy()
 

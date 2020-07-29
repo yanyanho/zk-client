@@ -80,7 +80,11 @@ class EventCallbackImpl(EventCallbackHandler):
         new_merkle_root = mix_result.new_merkle_root
         print("new_merkle_root in log: ", new_merkle_root)
         for wallet in make_wallet():
-            received_notes = wallet.receive_notes(mix_result.output_events)
+            # check merkel root
+            if new_merkle_root==wallet.merkle_tree.get_root():
+                return
+            # received_notes
+            wallet.receive_notes(mix_result.output_events)
             spent_commits = wallet.mark_nullifiers_used(mix_result.nullifiers)
             for commit in spent_commits:
                 print(f"{wallet.username} spent commits:  {commit}")
