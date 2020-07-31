@@ -9,6 +9,7 @@ from commands.utils import get_zeth_address_file, pub_address_file, \
 from commands.constants import USER_DIR
 from click import command, pass_context, ClickException, Context, option
 from os.path import exists
+from zeth.wallet import _ensure_dir
 ADDRESS_FILE_DEFAULT = "zeth-address.json"
 
 @command()
@@ -23,7 +24,8 @@ def gen_address(username: str) -> None:
     addr_file = "{}/{}/{}".format(USER_DIR, username, ADDRESS_FILE_DEFAULT)
     if exists(addr_file):
         raise ClickException(f"ZethAddress file {addr_file} exists")
-
+    user_dir = "{}/{}".format(USER_DIR, username)
+    _ensure_dir(user_dir)
     pub_addr_file = pub_address_file(addr_file)
     if exists(pub_addr_file):
         raise ClickException(f"ZethAddress pub file {pub_addr_file} exists")

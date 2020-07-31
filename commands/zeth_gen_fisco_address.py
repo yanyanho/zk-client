@@ -10,6 +10,7 @@ from commands.constants import USER_DIR, FISCO_ADDRESS_FILE
 from click import command, ClickException, option
 from os.path import exists
 from python_web3.eth_account.account import Account
+from zeth.wallet import _ensure_dir
 import json
 
 
@@ -26,6 +27,8 @@ def gen_fisco_address(username: str, password: str) -> None:
     keystore_file = "{}/{}/{}".format(USER_DIR, username, FISCO_ADDRESS_FILE)
     if exists(keystore_file):
         raise ClickException(f"ZethAddress file {keystore_file} exists")
+    user_dir = "{}/{}".format(USER_DIR, username)
+    _ensure_dir(user_dir)
     keytext = Account.encrypt(account.privateKey, password)
     with open(keystore_file, "w") as dump_f:
         json.dump(keytext, dump_f)

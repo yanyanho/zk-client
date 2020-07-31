@@ -61,9 +61,9 @@ setup(
         "websockets==6.0",
     ],
     scripts=[
-        "test_commands/test_ether_mixing.py",
+        #"test_commands/test_ether_mixing.py",
         "test_commands/test_erc_token_mixing.py",
         "test_commands/test_merkle_tree_contract.py",
-        "commands/zeth",
+        #"commands/zeth",
     ]
 )
