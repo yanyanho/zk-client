@@ -12,10 +12,8 @@ from os.path import exists
 from zeth.wallet import _ensure_dir
 ADDRESS_FILE_DEFAULT = "zeth-address.json"
 
-@command()
-@option("--username", prompt='Your name', help="specify a username for you")
-#@pass_context
-def gen_address(username: str) -> None:
+
+def gen_address(username: str) :
     """
     Generate a new Zeth secret key and public address
     """
@@ -35,5 +33,7 @@ def gen_address(username: str) -> None:
     print(f"ZethAddress Secret key written to {addr_file}")
     write_zeth_address_public(zeth_address.addr_pk, pub_addr_file)
     print(f"Public ZethAddress written to {pub_addr_file}")
+    return zeth_address.addr_pk
+    
 if __name__ == '__main__':
     gen_address()

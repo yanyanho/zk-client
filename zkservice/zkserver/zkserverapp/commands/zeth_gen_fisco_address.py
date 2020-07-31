@@ -15,11 +15,8 @@ import json
 
 
 
-@command()
-@option("--username", prompt='Your name', help="specify a username for you")
-@option("--password", prompt='Your password', help="specify a password for you")
-#@pass_context
-def gen_fisco_address(username: str, password: str) -> None:
+
+def gen_fisco_address(username: str, password: str) :
     """
     Generate a new fisco account
     """
@@ -35,5 +32,8 @@ def gen_fisco_address(username: str, password: str) -> None:
     print(f"{username}'s address: {account.address}")
     print(f"{username}'s publickey: {account.publickey}")
     print(f"fisco account keypair written to {keystore_file}")
+    return account.address account.publickey
+
+
 if __name__ == '__main__':
     gen_fisco_address()
