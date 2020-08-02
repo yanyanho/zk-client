@@ -21,12 +21,9 @@ from zeth.zksnark import get_zksnark_provider
 from commands.constants import PROVER_SERVER_ENDPOINT_DEFAULT
 
 
-@command()
-#@option("--eth-addr", help="Sender eth address or address filename")
-@option("--token-address", help="Address of token contract (if used)")
 def deploy(
         token_address: Optional[str]
-        ) -> None:
+        ) :
     """
     Deploy the zeth contracts and record the instantiation details.
     """
@@ -50,6 +47,7 @@ def deploy(
     mixer_address = mixerTransactionRecipient['contractAddress']
     print(f"deploy: mixer_address={mixer_address}")
     #mixer_instance = Groth16Mixer(address)
+    return mixer_address
 
 
 if __name__ == '__main__':

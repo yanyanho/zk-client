@@ -11,22 +11,15 @@ from zeth.utils import EtherValue
 from click import Context, command, option, pass_context
 from typing import Optional
 from web3 import Web3
-import sys
-sys.path.append('../')
 from contract.ERC20Mintable import ERC20Mintable
 #from test_commands.deploy_test_token import mint_token
 
 
 
-@command()
-@option("--miner-address", help="Address of miner")
-@option("--token-amount", help="amount of token been mint")
-@pass_context
 def deploy_token(
-        ctx: Context,
         miner_address: Optional[str],
         token_amount: Optional[int]
-        ) -> None:
+        ) :
     """
     Deploy the zeth contracts and record the instantiation details.
     """
@@ -41,6 +34,7 @@ def deploy_token(
     print("- Initial balances: ")
     outputresult = token_instance.balanceOf(miner_address)
     print(f"  {miner_address}     : {outputresult}")
+    return token_address
 
 if __name__ == '__main__':
     deploy_token()

@@ -15,6 +15,7 @@ from click import command, argument, option, pass_context, ClickException, Conte
 from zeth.wallet import Wallet, ZethNoteDescription
 from commands.utils import load_zeth_address
 from typing import List
+from zkserverapp.models import merkletree
 '''
 def usage():
     usagetext = '\nUsage:\nparams: contractname address event_name indexed\n' \
@@ -93,8 +94,7 @@ class EventCallbackImpl(EventCallbackHandler):
             print(f"The update_merkle_root in wallet of {wallet.username} is {update_merkle_root}")
 
 
-@command()
-@option("--mixer-addr", help="The Groth16Mixer contract address you want to listen")
+
 def event_sync(mixer_addr: str):
 
     indexed_value = None
@@ -122,18 +122,19 @@ def event_sync(mixer_addr: str):
             "after register LogMix,result:{},all:{}".format(
                 result['result'], result))
 
-        while True:
-            print("waiting event...")
-            time.sleep(10)
+        while(not merkletree.objects.all().count() or not merkletree.objects.all().last().is_new):
+            print(merkletree.objects.all().count())
+            time.sleep(1)
+
+        if bcos_event.client is not None:
+            bcos_event.client.finish()
+
     except Exception as e:
         print("Exception!")
         import traceback
         traceback.print_exc()
-    finally:
-        print("event callback finished!")
-        if bcos_event.client is not None:
-            bcos_event.client.finish()
-    sys.exit(-1)
+
+
 
 
 if __name__ == "__main__":

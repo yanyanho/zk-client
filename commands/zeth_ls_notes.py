@@ -9,11 +9,7 @@ import sys
 sys.path.append('../')
 #from contract.Groth16Mixer import Groth16Mixer
 
-@command()
-#@option("--mixer-addr", help="The Groth16Mixer contract address you want to use")
-@option("--username", help="The account you want to use")
-#@option("--balance", is_flag=True, help="Show total balance")
-#@option("--spent", is_flag=True, help="Show spent notes")
+
 def ls_notes(username: str) -> None:
     """
     List the set of notes owned by this wallet

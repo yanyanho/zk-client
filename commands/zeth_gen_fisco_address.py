@@ -15,18 +15,13 @@ import json
 
 
 
-@command()
-@option("--username", prompt='Your name', help="specify a username for you")
-@option("--password", prompt='Your password', help="specify a password for you")
-#@pass_context
-def gen_fisco_address(username: str, password: str) -> None:
+
+def gen_fisco_address(username: str, password: str) :
     """
     Generate a new fisco account
     """
-    account = Account.create(password)
     keystore_file = "{}/{}/{}".format(USER_DIR, username, FISCO_ADDRESS_FILE)
-    if exists(keystore_file):
-        raise ClickException(f"ZethAddress file {keystore_file} exists")
+    account = Account.create(password)
     user_dir = "{}/{}/{}".format(USER_DIR, username, WALLET_DIR_DEFAULT)
     _ensure_dir(user_dir)
     keytext = Account.encrypt(account.privateKey, password)
@@ -35,5 +30,8 @@ def gen_fisco_address(username: str, password: str) -> None:
     print(f"{username}'s address: {account.address}")
     print(f"{username}'s publickey: {account.publickey}")
     print(f"fisco account keypair written to {keystore_file}")
+    return account.address, account.publickey
+
+
 if __name__ == '__main__':
     gen_fisco_address()
