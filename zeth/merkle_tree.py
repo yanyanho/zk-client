@@ -4,11 +4,15 @@
 
 from __future__ import annotations
 from zeth.mimc import MiMC7
-from os.path import exists
+from os.path import exists, dirname, abspath
 import json
 import math
 from typing import Dict, List, Tuple, Iterator, cast, Any
 
+import sys
+sys.path.append('../zkservice/zkserver')
+#sys.path.append('./zkservice/zkserver')
+from zkserverapp.models import merkletree
 
 ZERO_ENTRY = bytes.fromhex(
     "0000000000000000000000000000000000000000000000000000000000000000")
@@ -222,6 +226,39 @@ class PersistentMerkleTree(MerkleTree):
     def save(self) -> None:
         with open(self.filename, "w") as tree_f:
             json.dump(self.tree_data.to_json_dict(), tree_f)
+
+class sqlMerkleTree(MerkleTree):
+    """
+    Version of MerkleTree that load the MerkleTree data from mysql.
+    """
+    def __init__(
+            self, tree_data: MerkleTreeData, depth: int):
+        MerkleTree.__init__(self, tree_data, depth)
+
+    def open(max_num_leaves: int) -> sqlMerkleTree:
+        depth = int(math.log(max_num_leaves, 2))
+        if merkletree.objects.all().count() == 0:
+            tree_data = MerkleTreeData.empty_with_depth(depth)
+        else:
+            result = merkletree.objects.all().last()
+            print("mysql search result: ", result)
+            json_dict = json.loads(result.tree_data)
+            tree_data = MerkleTreeData.from_json_dict(json_dict)
+            assert depth == tree_data.depth
+        return sqlMerkleTree(tree_data, depth)
+
+    def save(self) -> None:
+        if merkletree.objects.all().count() == 0:
+            json_str = json.dumps(self.tree_data.to_json_dict())
+            print("json_str: ", json_str)
+            merkletree.objects.create(tree_data = json_str, is_new = True)
+        else:
+            result = merkletree.objects.all().last()
+            print("mysql search result: ", result)
+            json_str = json.dumps(self.tree_data.to_json_dict())
+            result.tree_data = json_str
+            result.is_new = True
+            result.save()
 
 
 def _leaf_address_to_node_address(address_leaf: int, tree_depth: int) -> int:
