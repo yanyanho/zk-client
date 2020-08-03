@@ -16,14 +16,6 @@ sys.path.append('../')
 from contract.Groth16Mixer import Groth16Mixer
 from python_web3.eth_account.account import Account
 
-@command()
-@option("--mixer-addr", help="The Groth16Mixer contract address you want to use")
-@option("--username", help="The account you want to use")
-@option("--password", help="the password of you keystore")
-@option("--vin", default="0", help="public in value")
-@option("--vout", default="0", help="public out value")
-@option("--in", "input_notes", multiple=True)
-@option("--out", "output_specs", multiple=True, help="<receiver_pub_key>,<value>")
 def mix(
         mixer_addr: str,
         username: str,

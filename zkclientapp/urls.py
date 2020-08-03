@@ -19,4 +19,7 @@ urlpatterns = [
     url(r'^post$', views.post),
     url(r'^genFiscoAddr$', routes.genFiscoAddr),
     url(r'^genZbacAddr$', routes.genZbacAddr),
+    url(r'^deployToken$', routes.deployToken),
+    url(r'^deployMixer$', routes.deployMixer),
+    url(r'^depositBac$', routes.depositBac),
 ]

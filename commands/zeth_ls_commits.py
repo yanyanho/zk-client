@@ -8,10 +8,7 @@ from zeth.utils import short_commitment
 from click import Context, command, pass_context, option
 from commands.constants import PROVER_SERVER_ENDPOINT_DEFAULT
 
-@command()
-#@option("--mixer-addr", help="The Groth16Mixer contract address you want to use")
-@option("--username", help="The account you want to use")
-@option("--password", help="the password of you keystore")
+
 def ls_commits(username: str, password: str) -> None:
     """
     List all commitments in the joinsplit contract

@@ -9,26 +9,19 @@ from commands.constants import PROVER_SERVER_ENDPOINT_DEFAULT
 from zeth.mixer_client import ZethAddressPub
 from zeth.utils import EtherValue, from_zeth_units
 from api.zeth_messages_pb2 import ZethNote
-from click import command, option, pass_context, ClickException, Context
+from click import ClickException
 from typing import List, Tuple, Optional
-import sys
-sys.path.append('../')
 from contract.Groth16Mixer import Groth16Mixer
 from python_web3.eth_account.account import Account
 
-@command()
-@option("--mixer-addr", help="The Groth16Mixer contract address you want to use")
-@option("--username", help="The account you want to use")
-@option("--password", help="the password of you keystore")
-@option("--vin", default="0", help="public in value")
-@option("--out", "output_specs", multiple=True, help="<receiver_pub_key>,<value>")
+
 def deposit(
         mixer_addr: str,
         username: str,
         password: str,
         vin: str,
         output_specs: List[str]
-        ) -> None:
+        ) :
     """
     Generic mix function
     """
@@ -69,6 +62,10 @@ def deposit(
         tx_value)
 
     print("receipt status: ", receipt['status'])
+    if receipt['status'] == '0x0':
+        return True
+    else:
+        return False
     #do_sync(wallet, receipt)
 if __name__ == '__main__':
     deposit()

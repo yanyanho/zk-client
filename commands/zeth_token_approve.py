@@ -3,9 +3,7 @@
 # SPDX-License-Identifier: LGPL-3.0+
 
 from commands.utils import EtherValue
-from click import command, argument, option, pass_context, ClickException, Context
-import sys
-sys.path.append('../')
+from click import ClickException
 from contract.Groth16Mixer import Groth16Mixer
 from contract.ERC20Mintable import ERC20Mintable
 from python_web3.eth_account.account import Account
@@ -14,15 +12,8 @@ from commands.constants import USER_DIR, FISCO_ADDRESS_FILE
 import json
 from os.path import exists
 
-@command()
-@argument("tokens")
-#@option("--eth-addr", help="Sender eth address or address filename")
-#@option("--wait", is_flag=True, help="Wait for transaction to complete")
-@option("--mixer-addr", help="The Groth16Mixer contract address you want to use")
-@option("--token-addr", help="The Groth16Mixer contract address you want to use")
-@option("--username", help="the username you create before")
-@option("--password", help="the password of you keystore")
-def token_approve(tokens: str, mixer_addr: str, token_addr: str, username: str, password: str) -> None:
+
+def token_approve(tokens: str, mixer_addr: str, token_addr: str, username: str, password: str) :
     """
     Approve the mixer to spend some amount of tokens
     """
@@ -36,8 +27,6 @@ def token_approve(tokens: str, mixer_addr: str, token_addr: str, username: str, 
 
     token_instance = ERC20Mintable(token_addr)
     keystore_file = "{}/{}/{}".format(USER_DIR, username, FISCO_ADDRESS_FILE)
-    if exists(keystore_file) is False:
-        raise ClickException(f"invalid output spec: {keystore_file}")
     with open(keystore_file, "r") as dump_f:
         keytext = json.load(dump_f)
         privkey = Account.decrypt(keytext, password)
@@ -53,6 +42,7 @@ def token_approve(tokens: str, mixer_addr: str, token_addr: str, username: str, 
         approve_value.wei)
     outputresult = token_instance.allowance(token_instance.client.ecdsa_account.address, mixer_addr)
     print(f"- The allowance for the Mixer from {username} is: {outputresult}")
+    return outputresult
 
 if __name__ == '__main__':
     token_approve()

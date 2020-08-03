@@ -10,7 +10,7 @@ from zeth.mixer_client import zeth_note_to_json_dict, zeth_note_from_json_dict, 
     receive_note, compute_nullifier, compute_commitment
 from zeth.constants import ZETH_MERKLE_TREE_DEPTH
 from zeth.contracts import MixOutputEvents
-from zeth.merkle_tree import PersistentMerkleTree
+from zeth.merkle_tree import sqlMerkleTree
 from zeth.utils import EtherValue, short_commitment, from_zeth_units
 from api.zeth_messages_pb2 import ZethNote
 from os.path import join, basename, exists
@@ -133,8 +133,7 @@ class Wallet:
         self.state_file = join(wallet_dir, f"state_{username}")
         self.state = _load_state_or_default(self.state_file)
         _ensure_dir(join(self.wallet_dir, SPENT_SUBDIRECTORY))
-        self.merkle_tree = PersistentMerkleTree.open(
-            join(wallet_dir, MERKLE_TREE_FILE),
+        self.merkle_tree = sqlMerkleTree.open(
             int(math.pow(2, ZETH_MERKLE_TREE_DEPTH)))
         self.merkle_tree_changed = False
         self.next_addr = self.merkle_tree.get_num_entries()
