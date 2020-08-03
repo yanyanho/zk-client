@@ -10,9 +10,9 @@ import math
 from typing import Dict, List, Tuple, Iterator, cast, Any
 
 import sys
-sys.path.append('../zkservice/zkserver')
+#sys.path.append('../zkservice/zkserver')
 #sys.path.append('./zkservice/zkserver')
-from zkserverapp.models import merkletree
+from zkclientapp.models import merkletree
 
 ZERO_ENTRY = bytes.fromhex(
     "0000000000000000000000000000000000000000000000000000000000000000")
