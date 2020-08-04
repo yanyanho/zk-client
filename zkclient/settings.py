@@ -77,10 +77,10 @@ WSGI_APPLICATION = 'zkclient.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'merkletree',
+        'NAME': 'zkclient',
         'USER': 'root',
-        'PASSWORD': '8614',
-        'HOST':'127.0.0.1',
+        'PASSWORD': 'xBj2019',
+        'HOST':'39.108.248.156',
         'PORT':'3306',
     }
 }

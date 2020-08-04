@@ -17,3 +17,5 @@
 _test_notes
 **/logs
 user
+zkclient/settings.py
+env/
