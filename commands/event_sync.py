@@ -15,7 +15,7 @@ from click import command, argument, option, pass_context, ClickException, Conte
 from zeth.wallet import Wallet, ZethNoteDescription
 from commands.utils import load_zeth_address
 from typing import List
-from zkclientapp.models import merkletree
+from zkserverapp.models import merkletree
 '''
 def usage():
     usagetext = '\nUsage:\nparams: contractname address event_name indexed\n' \
@@ -74,14 +74,17 @@ class EventCallbackImpl(EventCallbackHandler):
 
     def on_event(self, eventdata):
         logresult = self.abiparser.parse_event_logs(eventdata["logs"])
+        #todo: judge the event whether equal the last event
         print("--------------------EventCallbackImpl--------------------\n")
         logMix = logresult[0]['eventdata']
         logMixEvent = LogMixEvent(logMix[0],logMix[1], logMix[2], logMix[3])
         mix_result = _event_args_to_mix_result(logMixEvent)
+        #todo: recieve a root list from mixresult
         new_merkle_root = mix_result.new_merkle_root
         print("new_merkle_root in log: ", new_merkle_root)
         for wallet in make_wallet():
             # check merkel root
+            #todo: cancel the comparision here. 
             if new_merkle_root==wallet.merkle_tree.get_root():
                 return
             # received_notes

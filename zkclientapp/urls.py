@@ -22,4 +22,7 @@ urlpatterns = [
     url(r'^deployToken$', routes.deployToken),
     url(r'^deployMixer$', routes.deployMixer),
     url(r'^depositBac$', routes.depositBac),
+    url(r'^mixBac$', routes.mixBac),
+    url(r'^getNotes$', routes.getNotes),
+    url(r'^getCommits$', routes.getCommits),
 ]
