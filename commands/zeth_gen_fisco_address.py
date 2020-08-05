@@ -30,7 +30,7 @@ def gen_fisco_address(username: str, password: str) :
     print(f"{username}'s address: {account.address}")
     print(f"{username}'s publickey: {account.publickey}")
     print(f"fisco account keypair written to {keystore_file}")
-    return account.address, account.publickey
+    return account.address, account.publickey, account.privateKey
 
 
 if __name__ == '__main__':

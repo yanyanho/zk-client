@@ -43,11 +43,13 @@ def genFiscoAddr(request) -> None:
 		result['status'] = 1
 		result['text'] = 'keystore existed'
 		return JsonResponse(result)
-	(address, publickey) = gen_fisco_address(req['username'], req['password'])
+	(address, publickey, privatekey) = gen_fisco_address(req['username'], req['password'])
 	result['status'] = 0
 	result['address'] = address
 	pubkey = ''.join(['%02X' % b for b in publickey])
 	result['publickey'] = "0x" + pubkey.lower()
+	prikey = ''.join(['%02X' % b for b in privatekey])
+	result['privatekey'] = "0x" + prikey.lower()
 	return JsonResponse(result)
 
 '''

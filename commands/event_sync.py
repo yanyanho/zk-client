@@ -15,7 +15,7 @@ from click import command, argument, option, pass_context, ClickException, Conte
 from zeth.wallet import Wallet, ZethNoteDescription
 from commands.utils import load_zeth_address
 from typing import List
-from zkserverapp.models import merkletree
+from zkclientapp.models import merkletree
 '''
 def usage():
     usagetext = '\nUsage:\nparams: contractname address event_name indexed\n' \
