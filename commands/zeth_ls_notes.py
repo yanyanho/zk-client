@@ -5,12 +5,10 @@
 from commands.utils import load_zeth_address_secret, open_wallet
 from zeth.utils import EtherValue
 from click import Context, command, option, pass_context
-import sys
-sys.path.append('../')
 #from contract.Groth16Mixer import Groth16Mixer
 
 
-def ls_notes(username: str) -> None:
+def ls_notes(username: str):
     """
     List the set of notes owned by this wallet
     """
@@ -23,14 +21,19 @@ def ls_notes(username: str) -> None:
     wallet = open_wallet(None, js_secret, username)
 
     total = EtherValue(0)
+    commits = []
     for addr, short_commit, value in wallet.note_summaries():
-        print(f"{short_commit}: value={value.ether()}, addr={addr}")
+        #print(f"{short_commit}: value={value.ether()}, addr={addr}")
         total = total + value
+        commits.append(short_commit)
 
-    print(f"TOTAL BALANCE: {total.ether()}")
+    #print(f"TOTAL BALANCE: {total.ether()}")
 
-    print("SPENT NOTES:")
+    #print("SPENT NOTES:")
+    spend_commits = []
     for addr, short_commit, value in wallet.spent_note_summaries():
-        print(f"{short_commit}: value={value.ether()}, addr={addr}")
+        #print(f"{short_commit}: value={value.ether()}, addr={addr}")
+        spend_commits.append(short_commit)
+    return total, commits, spend_commits
 if __name__ == '__main__':
     ls_notes()

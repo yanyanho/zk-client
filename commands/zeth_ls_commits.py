@@ -9,7 +9,7 @@ from click import Context, command, pass_context, option
 from commands.constants import PROVER_SERVER_ENDPOINT_DEFAULT
 
 
-def ls_commits(username: str, password: str) -> None:
+def ls_commits(username: str) -> None:
     """
     List all commitments in the joinsplit contract
     """
@@ -17,9 +17,12 @@ def ls_commits(username: str, password: str) -> None:
     zeth_address = load_zeth_address(username)
     wallet = open_wallet(
         None, zeth_address.addr_sk, username)
-    print("COMMITMENTS:")
+    #print("COMMITMENTS:")
+    commits = []
     for commit in wallet.merkle_tree.get_leaves():
-        print(f"  {short_commitment(commit)}")
+        #print(f"  {short_commitment(commit)}")
+        commits.append(commit)
+    return commits
 
 if __name__ == '__main__':
     ls_commits()
