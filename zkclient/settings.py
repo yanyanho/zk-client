@@ -44,7 +44,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -77,10 +77,10 @@ WSGI_APPLICATION = 'zkclient.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'merkletree',
+        'NAME': 'zkclient',
         'USER': 'root',
-        'PASSWORD': '8614',
-        'HOST':'127.0.0.1',
+        'PASSWORD': 'xBj2019',
+        'HOST':'39.108.248.156',
         'PORT':'3306',
     }
 }
