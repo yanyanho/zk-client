@@ -500,6 +500,7 @@ class BcosClient:
 
         # load default account if not set .notice: account only use for
         # sign transaction for sendRawTransa# if self.client_account is None:
+        # todo
         self.load_default_account()
         # 填写一个bcos transaction 的 mapping
         import random
