@@ -241,7 +241,7 @@ class sqlMerkleTree(MerkleTree):
             tree_data = MerkleTreeData.empty_with_depth(depth)
         else:
             result = merkletree.objects.all().last()
-            print("mysql search result: ", result)
+            print("mysql search mid result: ", result)
             json_dict = json.loads(result.tree_data)
             tree_data = MerkleTreeData.from_json_dict(json_dict)
             assert depth == tree_data.depth

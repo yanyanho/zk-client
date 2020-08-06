@@ -37,9 +37,10 @@ def token_approve(tokens: str, mixer_addr: str, token_addr: str, username: str, 
         keypair.address = token_instance.client.ecdsa_account.address
         token_instance.client.keypair = keypair
     print(f"- {username} approves the transfer of ERC20Token to the Mixer")
-    token_instance.approve(
+    out, transactionReceipt = token_instance.approve(
         mixer_addr,
         approve_value.wei)
+    print("approve tranaction output", out)
     outputresult = token_instance.allowance(token_instance.client.ecdsa_account.address, mixer_addr)
     print(f"- The allowance for the Mixer from {username} is: {outputresult}")
     return outputresult

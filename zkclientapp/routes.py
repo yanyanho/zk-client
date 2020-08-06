@@ -236,23 +236,23 @@ def mixBac(request) -> None:
 		input_note_sum = from_zeth_units(
 			sum([int(note.value, 16) for _, note in inputs]))
 		output_note_sum = sum([value for _, value in outputs], EtherValue(0))
-		vin_pub = EtherValue(req['vin'])
+		vin_pub = EtherValue(req['vin']  )
 		vout_pub = EtherValue(req['vout'])
 		if vin_pub + input_note_sum != vout_pub + output_note_sum:
 			result['status'] = 1
 			result['text'] = 'input and output value mismatch'
 			return JsonResponse(result)
-		while (models.merkletree.objects.all().count() and not models.merkletree.objects.all().last().is_new):
+		while (merkletree.objects.all().count() and not merkletree.objects.all().last().is_new):
 			time.sleep(1)
-		sqlResult = models.merkletree.objects.all().last()
-		if models.merkletree.objects.all().count():
+		sqlResult = merkletree.objects.all().last()
+		if sqlResult:
 			sqlResult.is_new = False
 			sqlResult.save()
 		if req['vin']:
 			token_approve(req['vin'], req['mixer_address'], req['token_address'], req['username'], req['password'])
 		outputmix = mix(req['mixer_address'], req['username'], req['password'], vin_pub, vout_pub, inputs, outputs)
 		if outputmix:
-			event_sync(req['mixer_address'])
+			event_sync(req['mixer_address'],sqlResult.blockNumber)
 			total = EtherValue(0)
 			commits = []
 			for addr, short_commit, value in wallet.note_summaries():
@@ -263,7 +263,7 @@ def mixBac(request) -> None:
 			result['total_value'] = total.ether()
 			return JsonResponse(result)
 		else:
-			if models.merkletree.objects.all().count():
+			if merkletree.objects.all().count():
 				sqlResult.is_new = True
 				sqlResult.save()
 			result['status'] = 1

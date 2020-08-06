@@ -60,6 +60,7 @@ def make_wallet() -> List[Wallet]:
         wallet_dir = "{}/{}/{}".format(USER_DIR, username, WALLET_DIR_DEFAULT)
         zeth_address = load_zeth_address(username)
         wallet_list.append(Wallet(None, username, wallet_dir, zeth_address.addr_sk))
+        print("DDDDDDDDDDD")
     return wallet_list
 
 class EventCallbackImpl(EventCallbackHandler):
@@ -87,6 +88,7 @@ class EventCallbackImpl(EventCallbackHandler):
             # check merkel root
             wallet.blockNumber = blockNumber
             if new_merkle_root == wallet.merkle_tree.get_root():
+                print("")
                 return
             # received_notes
             wallet.receive_notes(mix_result.output_events)
@@ -119,7 +121,7 @@ def event_sync(mixer_addr: str, blockNumber: int):
         eventcallback.abiparser = abiparser
 # todo  event listening
         result = bcos_event.register_eventlog_filter(
-            eventcallback, abiparser, [mixer_addr], "LogMix", indexed_value, str(blockNumber))
+            eventcallback, abiparser, [mixer_addr], "LogMix", indexed_value, str(blockNumber+1))
         #result = bcos_event.register_eventlog_filter(eventcallback02,abiparser, [address], "on_number")
 
         print(

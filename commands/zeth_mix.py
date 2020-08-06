@@ -54,7 +54,7 @@ def mix(
         vout_pub,
         tx_value)
 
-    print("receipt status: ", receipt['status'])
+    print("receipt status: {},receipt output: {}",  receipt['status'], receipt['output'])
     if receipt['status'] == '0x0':
         return True
     else:
