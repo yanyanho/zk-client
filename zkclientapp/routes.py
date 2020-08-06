@@ -20,6 +20,7 @@ from django.http import JsonResponse
 from os.path import exists
 from typing import List, Tuple
 from . import models
+from .models import merkletree
 
 '''
 The wallet of user is designed as that every wallet need to be specified a username and store the 
@@ -157,12 +158,15 @@ def depositBac(request) -> None:
 	keystore_file = "{}/{}/{}".format(USER_DIR, req['username'], FISCO_ADDRESS_FILE)
 	addr_file = "{}/{}/{}".format(USER_DIR, req['username'], ADDRESS_FILE_DEFAULT)
 	if exists(keystore_file) and exists(addr_file) :
-		while (models.merkletree.objects.all().count() and not models.merkletree.objects.all().last().is_new):
+		while (merkletree.objects.all().count() and not merkletree.objects.all().last().is_new):
 			time.sleep(1)
-		sqlResult = models.merkletree.objects.all().last()
-		if models.merkletree.objects.all().count():
+			print("sleep")
+		sqlResult = merkletree.objects.all().last()
+		blockNumber = 1;
+		if sqlResult:
 			sqlResult.is_new = False
 			sqlResult.save()
+			blockNumber = sqlResult.blockNumber
 		outputapprove = token_approve(req['token_amount'], req['mixer_address'], req['token_address'], req['username'], req['password'])
 		if outputapprove :
 			zeth_address = load_zeth_address(req['username'])
@@ -170,9 +174,11 @@ def depositBac(request) -> None:
 			print(str(zeth_address.addr_pk) + ',' + str(req['value1']))
 			output_specs.append(str(zeth_address.addr_pk) + ',' + str(req['value1']))
 			output_specs.append(str(zeth_address.addr_pk) + ',' + str(req['value2']))
+
 			outputdeposit = deposit(req['mixer_address'], req['username'], req['password'], req['token_amount'], output_specs)
+			# todo
 			if outputdeposit :
-				event_sync(req['mixer_address'])
+				event_sync(req['mixer_address'], blockNumber)
 				js_secret = load_zeth_address_secret(req['username'])
 				wallet = open_wallet(None, js_secret, req['username'])
 				total = EtherValue(0)

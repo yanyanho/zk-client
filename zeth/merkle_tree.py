@@ -247,17 +247,18 @@ class sqlMerkleTree(MerkleTree):
             assert depth == tree_data.depth
         return sqlMerkleTree(tree_data, depth)
 
-    def save(self) -> None:
+    def save(self, blockNumber : int) -> None:
         if merkletree.objects.all().count() == 0:
             json_str = json.dumps(self.tree_data.to_json_dict())
             print("json_str: ", json_str)
-            merkletree.objects.create(tree_data = json_str, is_new = True)
+            merkletree.objects.create(tree_data = json_str, is_new = True, blockNumber = 1)
         else:
             result = merkletree.objects.all().last()
             print("mysql search result: ", result)
             json_str = json.dumps(self.tree_data.to_json_dict())
             result.tree_data = json_str
             result.is_new = True
+            result.blockNumber = blockNumber
             result.save()
 
 

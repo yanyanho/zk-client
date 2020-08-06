@@ -73,6 +73,7 @@ class EventCallbackImpl(EventCallbackHandler):
     abiparser: DatatypeParser = None
 
     def on_event(self, eventdata):
+        blockNumber = eventdata["logs"][0]['blockNumber']
         logresult = self.abiparser.parse_event_logs(eventdata["logs"])
         #todo: judge the event whether equal the last event
         print("--------------------EventCallbackImpl--------------------\n")
@@ -84,8 +85,8 @@ class EventCallbackImpl(EventCallbackHandler):
         print("new_merkle_root in log: ", new_merkle_root)
         for wallet in make_wallet():
             # check merkel root
-            #todo: cancel the comparision here. 
-            if new_merkle_root==wallet.merkle_tree.get_root():
+            wallet.blockNumber = blockNumber
+            if new_merkle_root == wallet.merkle_tree.get_root():
                 return
             # received_notes
             wallet.receive_notes(mix_result.output_events)
@@ -98,7 +99,7 @@ class EventCallbackImpl(EventCallbackHandler):
 
 
 
-def event_sync(mixer_addr: str):
+def event_sync(mixer_addr: str, blockNumber: int):
 
     indexed_value = None
     try:
@@ -116,9 +117,9 @@ def event_sync(mixer_addr: str):
         abiparser = DatatypeParser(abifile)
         eventcallback = EventCallbackImpl()
         eventcallback.abiparser = abiparser
-
+# todo  event listening
         result = bcos_event.register_eventlog_filter(
-            eventcallback, abiparser, [mixer_addr], "LogMix", indexed_value)
+            eventcallback, abiparser, [mixer_addr], "LogMix", indexed_value, str(blockNumber))
         #result = bcos_event.register_eventlog_filter(eventcallback02,abiparser, [address], "on_number")
 
         print(
@@ -126,8 +127,9 @@ def event_sync(mixer_addr: str):
                 result['result'], result))
 
         while(not merkletree.objects.all().count() or not merkletree.objects.all().last().is_new):
-            print(merkletree.objects.all().count())
-            time.sleep(1)
+            print("sleep ",merkletree.objects.all().count())
+            # todo
+            time.sleep(5)
 
         if bcos_event.client is not None:
             bcos_event.client.finish()

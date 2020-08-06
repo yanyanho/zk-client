@@ -137,6 +137,7 @@ class Wallet:
             int(math.pow(2, ZETH_MERKLE_TREE_DEPTH)))
         self.merkle_tree_changed = False
         self.next_addr = self.merkle_tree.get_num_entries()
+        self.blockNumber = 1;
 
     def receive_note(
             self,
@@ -236,7 +237,7 @@ class Wallet:
         if self.merkle_tree_changed:
             self.merkle_tree_changed = False
             self.merkle_tree.recompute_root()
-            self.merkle_tree.save()
+            self.merkle_tree.save(self.blockNumber)
 
     def _write_note(self, note_desc: ZethNoteDescription) -> None:
         """
