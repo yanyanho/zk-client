@@ -41,7 +41,7 @@ def genFiscoAddr(request) -> None:
 	keystore_file = "{}/{}/{}".format(USER_DIR, req['username'], FISCO_ADDRESS_FILE)
 	if exists(keystore_file):
 		result['status'] = 1
-		result['text'] = 'keystore existed'
+		result['text'] = 'username existed'
 		return JsonResponse(result)
 	(address, publickey, privatekey) = gen_fisco_address(req['username'], req['password'])
 	result['status'] = 0

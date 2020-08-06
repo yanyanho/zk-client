@@ -79,7 +79,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'zkclient',
         'USER': 'root',
-        'PASSWORD': '******',
+        'PASSWORD': 'xBj2019',
         'HOST':'39.108.248.156',
         'PORT':'3306',
     }
