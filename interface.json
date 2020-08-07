@@ -1,0 +1,121 @@
+[
+  {
+    "description": "genFiscoAddr",
+    "request": {
+      "method": "POST",
+      "uri": "/genFiscoAddr",
+
+      "body": {
+        "username": "hehe",
+        "password": "123456"
+      }
+    },
+    "response": {
+      "status": 0,
+    "address": "0x9f2DcA9562A14285c47857d49eC4a9435d62130d",
+    "publickey": "0x8f742318dc319ff8ab9fbac46738804f239adb02fc193c58c2be0aa689c158cdc5cf675f06f3316fad11bb9c43ae6b9def1f4f877e6802552d400968c3c788f6",
+    "privatekey": "0x3fa34c3f31a42c65c4c7056d05d3130f4d0d29bba81266de06b79be3cf80740e"
+    }
+  },
+  {
+    "description": "genZbacAddr",
+    "request": {
+      "method": "POST",
+      "uri": "/genZbacAddr",
+
+      "body": {
+        "username": "hehe"
+      }
+    },
+    "response": {
+    "status": 0,
+    "address": "d3603132dbaf076060d16d911a4adf8d6624b60510a819def82599353a0685ec:8f37a09af7b7469a5b7bef573e941521e8cc8ef6c528b30a16a5b7bb211f7362"
+      }
+  },
+  {
+    "description": "deployToken",
+    "request": {
+      "method": "POST",
+      "uri": "/deployToken",
+
+      "body": {
+        "description" : "hehe first token",
+        "shortName": "HEHE",
+        "minUnit":18,
+        "totalAmount" : 50000000000
+      }
+    },
+    "response": {
+    "status": 0,
+    "address": "0xc0c5e664442b3d5f0aa4d30e900d5aeeef596e04"
+      }
+  },
+  {
+    "description": "deployMixer",
+    "request": {
+      "method": "POST",
+      "uri": "/deployMixer",
+
+      "body": {
+        "description" : "hehe first token",
+        "shortName": "HEHE",
+        "minUnit":18,
+        "totalAmount" : 50000000000
+      }
+    },
+    "response": {
+    "status": 0,
+    "address": "0xc0c5e664442b3d5f0aa4d30e900d5aeeef596e04"
+      }
+  },
+  {
+    "description": "depositBac",
+    "request": {
+      "method": "POST",
+      "uri": "/depositBac",
+
+      "body": {
+       "username": "hehe",
+      "password":"123456",
+     "token_amount":20,
+	  "mixer_address":"0x808b153005654821f8c9b2e9344807998734a999",
+	"token_address":"0x511003e45fdbfdc993d6a87b6c71dedda2fe5e09",
+	"value1": 10,
+	"value2":10
+      }
+    },
+    "response": {
+       "status": 0,
+    "commits": [
+        "29c6f32e",
+        "1b9e9873"
+    ],
+    "total_value": "20"
+    }
+  },
+  {
+    "description": "zkbac transfer",
+    "request": {
+      "method": "POST",
+      "uri": "/mixBac",
+
+      "body": {
+       "username": "hehe",
+      "password":"123456",
+      "token_amount":20,
+      "vin":0,
+      "vout":20,
+	"mixer_address":"0x808b153005654821f8c9b2e9344807998734a999",
+	"token_address":"0x511003e45fdbfdc993d6a87b6c71dedda2fe5e09",
+	"input_notes": ["29c6f32e","1b9e9873"],
+	"output_specs":[]
+      }
+    },
+    "response": {
+      "status": 0,
+      "commits": [],
+      "total_value": "0"
+    }
+  }
+
+]
