@@ -4,7 +4,6 @@
     "request": {
       "method": "POST",
       "uri": "/genFiscoAddr",
-
       "body": {
         "username": "hehe",
         "password": "123456"
@@ -115,6 +114,21 @@
       "status": 0,
       "commits": [],
       "total_value": "0"
+    }
+  },
+  {
+    "description": "getCommits",
+    "request": {
+      "method": "GET",
+      "uri": "/getCommits",
+      "headers": {
+        "username": "hehe",
+        "password": "123456"
+      }
+    },
+    "response": {
+      "status": 0,
+    "commits": []
     }
   }
 
