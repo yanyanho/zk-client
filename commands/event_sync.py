@@ -94,6 +94,7 @@ class EventCallbackImpl(EventCallbackHandler):
             if new_merkle_root==wallet.merkle_tree.get_root():
                 return
             # received_notes
+            wallet.blockNumber = blockNumber
             wallet.receive_notes(mix_result.output_events)
             spent_commits = wallet.mark_nullifiers_used(mix_result.nullifiers)
             for commit in spent_commits:

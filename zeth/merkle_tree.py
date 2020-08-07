@@ -12,8 +12,17 @@ from typing import Dict, List, Tuple, Iterator, cast, Any
 import sys
 #sys.path.append('../zkservice/zkserver')
 #sys.path.append('./zkservice/zkserver')
-from zkserverapp.models import merkletree
-
+#from zkserverapp.models import merkletree
+import pymysql
+db = pymysql.connect(
+    host='127.0.0.1',
+    port=3306,
+    user='root',
+    password='8614',
+    database='merkletree',
+    charset='utf8'
+    )
+cursor = db.cursor()
 ZERO_ENTRY = bytes.fromhex(
     "0000000000000000000000000000000000000000000000000000000000000000")
 
@@ -237,28 +246,47 @@ class sqlMerkleTree(MerkleTree):
 
     def open(max_num_leaves: int) -> sqlMerkleTree:
         depth = int(math.log(max_num_leaves, 2))
-        if merkletree.objects.all().count() == 0:
+        sqlSearch = "select * from merkletree"
+        cursor.execute(sqlSearch)
+        results = cursor.fetchall()
+        if not results:
             tree_data = MerkleTreeData.empty_with_depth(depth)
         else:
-            result = merkletree.objects.all().last()
-            print("mysql search mid result: ", result)
-            json_dict = json.loads(result.tree_data)
+            result = results[0]
+            print("mysql search result: ", result)
+            json_dict = json.loads(result[1])
             tree_data = MerkleTreeData.from_json_dict(json_dict)
             assert depth == tree_data.depth
         return sqlMerkleTree(tree_data, depth)
 
     def save(self, blockNumber : int) -> None:
-        if merkletree.objects.all().count() == 0:
+        sqlSearch = "select * from merkletree"
+        cursor.execute(sqlSearch)
+        results = cursor.fetchall()
+        if not results:
             json_str = json.dumps(self.tree_data.to_json_dict())
             print("json_str: ", json_str)
-            merkletree.objects.create(tree_data = json_str, blockNumber = blockNumber)
+            sqlInsert = "insert into merkletree (tree_data, is_new, blockNumber) values (%s, %s, %s);"
+            is_new= 1
+            cursor.execute(sqlSearch, [json_str, is_new, blockNumber])
+            db.commit()
         else:
-            result = merkletree.objects.all().last()
-            print("mysql search result: ", result)
+            result = results[0]
             json_str = json.dumps(self.tree_data.to_json_dict())
-            result.tree_data = json_str
-            result.blockNumber = blockNumber
-            result.save()
+            is_new = 1
+            #json_str = pymysql.escape_string(json_str)
+            #print("json_str: ", json_str)
+            '''
+            sqlUpdate1 = "update merkletree set (tree_data='%s'" % json_str
+            sqlUpdate2 = ", is_new=%d"%is_new
+            sqlUpdate3 = ", blockNumber=%d"%blockNumber
+            sqlUpdate4 = ") where MID=%s;"%result[0]
+            sqlUpdate = sqlUpdate1 + sqlUpdate2 + sqlUpdate3 + sqlUpdate4
+            '''
+            sqlUpdate = "update merkletree set tree_data=%s, is_new=%s, blockNumber=%s where MID=%s;"
+            #print("sqlUpdate: ", sqlUpdate)
+            cursor.execute(sqlUpdate, [json_str, is_new, blockNumber, result[0]])
+            db.commit()
 
 
 def _leaf_address_to_node_address(address_leaf: int, tree_depth: int) -> int:
