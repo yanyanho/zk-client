@@ -10,6 +10,8 @@ from commands.zeth_ls_commits import ls_commits
 from commands.zeth_ls_notes import ls_notes
 from commands.zeth_deploy import deploy
 from commands.utils import load_zeth_address, load_zeth_address_secret, open_wallet, parse_output
+from contract.BAC001 import BAC001
+from python_web3.client.bcoskeypair import BcosKeyPair
 from zeth.utils import EtherValue, from_zeth_units
 from python_web3.eth_account.account import Account
 from commands.constants import USER_DIR, FISCO_ADDRESS_FILE, WALLET_DIR_DEFAULT, ADDRESS_FILE_DEFAULT
@@ -137,6 +139,32 @@ def deployMixer(request) -> None:
 		return JsonResponse(result)
 	result['status'] = 1
 	result['text'] = 'deploy zksnark mixer contract failed'
+	return JsonResponse(result)
+
+
+def sendAsset(request) -> None:
+	result = {}
+	req = json.loads(request.body)
+	asset_instance = BAC001(req['assetAddress'])
+	keystore_file = "{}/{}/{}".format(USER_DIR, req['username'], FISCO_ADDRESS_FILE)
+	with open(keystore_file, "r") as dump_f:
+		keytext = json.load(dump_f)
+		privkey = Account.decrypt(keytext, req['password'])
+		asset_instance.client.ecdsa_account = Account.from_key(privkey)
+		keypair = BcosKeyPair()
+		keypair.private_key = asset_instance.client.ecdsa_account.privateKey
+		keypair.public_key = asset_instance.client.ecdsa_account.publickey
+		keypair.address = asset_instance.client.ecdsa_account.address
+		asset_instance.client.keypair = keypair
+	print(f"- {req['username']}  the transfer of BAC001asset to the Mixer")
+	value = EtherValue(req['value'])
+	out, transactionReceipt = asset_instance.send(
+		req['toAddress'],
+		value.wei,'')
+	print("send tranaction output {}", out)
+	balance = asset_instance.balance(keypair.address)
+	result['status'] = 0
+	result['address'] = balance
 	return JsonResponse(result)
 
 '''
