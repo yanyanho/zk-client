@@ -19,3 +19,4 @@ _test_notes
 user
 zkclient/settings.py
 env/
+*.keystore
