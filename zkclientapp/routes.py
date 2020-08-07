@@ -113,7 +113,7 @@ token_amount:int --help: the total amount of bac
 def deployToken(request) -> None:
 	result = {}
 	req = json.loads(request.body)
-	token_address = deploy_asset(req['miner_address'], req['token_amount'])
+	token_address = deploy_asset(req['description'], req['shortName'],req['minUnit'],req['total_amount'])
 	if token_address :
 		result['status'] = 0
 		result['address'] = str(token_address)

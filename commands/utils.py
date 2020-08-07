@@ -17,7 +17,6 @@ from os.path import exists, join
 from typing import Dict, Tuple, Optional, Callable, Any
 #from web3 import Web3  # type: ignore
 from contract.Groth16Mixer import Groth16Mixer
-from contract.ERC20Mintable import ERC20Mintable
 from python_web3.eth_account.account import Account
 from python_web3.client.bcoskeypair import BcosKeyPair #todo
 

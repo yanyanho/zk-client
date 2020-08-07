@@ -2,19 +2,16 @@
 #
 # SPDX-License-Identifier: LGPL-3.0+
 
-from commands.utils import EtherValue
-from click import ClickException
-
-from contract.BAC001 import BAC001
-from contract.Groth16Mixer import Groth16Mixer
-from python_web3.eth_account.account import Account
-from python_web3.client.bcoskeypair import BcosKeyPair
-from commands.constants import USER_DIR, FISCO_ADDRESS_FILE
 import json
-from os.path import exists
+
+from commands.constants import USER_DIR, FISCO_ADDRESS_FILE
+from commands.utils import EtherValue
+from contract.BAC001 import BAC001
+from python_web3.client.bcoskeypair import BcosKeyPair
+from python_web3.eth_account.account import Account
 
 
-def asset_approve(assets: str, mixer_addr: str, asset_addr: str, username: str, password: str) :
+def token_approve(assets: str, mixer_addr: str, asset_addr: str, username: str, password: str) :
     """
     Approve the mixer to spend some amount of assets
     """
@@ -47,4 +44,4 @@ def asset_approve(assets: str, mixer_addr: str, asset_addr: str, username: str, 
     return outputresult
 
 if __name__ == '__main__':
-    asset_approve()
+    token_approve()
