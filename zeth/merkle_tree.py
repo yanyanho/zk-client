@@ -12,7 +12,7 @@ from typing import Dict, List, Tuple, Iterator, cast, Any
 import sys
 #sys.path.append('../zkservice/zkserver')
 #sys.path.append('./zkservice/zkserver')
-from zkclientapp.models import merkletree
+from zkserverapp.models import merkletree
 
 ZERO_ENTRY = bytes.fromhex(
     "0000000000000000000000000000000000000000000000000000000000000000")
@@ -251,13 +251,12 @@ class sqlMerkleTree(MerkleTree):
         if merkletree.objects.all().count() == 0:
             json_str = json.dumps(self.tree_data.to_json_dict())
             print("json_str: ", json_str)
-            merkletree.objects.create(tree_data = json_str, is_new = True, blockNumber = 1)
+            merkletree.objects.create(tree_data = json_str, blockNumber = blockNumber)
         else:
             result = merkletree.objects.all().last()
             print("mysql search result: ", result)
             json_str = json.dumps(self.tree_data.to_json_dict())
             result.tree_data = json_str
-            result.is_new = True
             result.blockNumber = blockNumber
             result.save()
 

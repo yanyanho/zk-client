@@ -15,7 +15,7 @@ from click import command, argument, option, pass_context, ClickException, Conte
 from zeth.wallet import Wallet, ZethNoteDescription
 from commands.utils import load_zeth_address
 from typing import List
-from zkclientapp.models import merkletree
+import pymysql
 '''
 def usage():
     usagetext = '\nUsage:\nparams: contractname address event_name indexed\n' \
@@ -38,7 +38,15 @@ def usage():
     usagetext = usagetext + "\n...(and other events)"
     print(usagetext)
 '''
-
+db = pymysql.connect(
+    host='127.0.0.1',
+    port=3306,
+    user='root',
+    password='8614',
+    database='merkletree',
+    charset='utf8'
+    )
+cursor = db.cursor()
 class LogMixEvent(object):
     def __init__(
             self,
@@ -60,7 +68,6 @@ def make_wallet() -> List[Wallet]:
         wallet_dir = "{}/{}/{}".format(USER_DIR, username, WALLET_DIR_DEFAULT)
         zeth_address = load_zeth_address(username)
         wallet_list.append(Wallet(None, username, wallet_dir, zeth_address.addr_sk))
-        print("DDDDDDDDDDD")
     return wallet_list
 
 class EventCallbackImpl(EventCallbackHandler):
@@ -74,21 +81,17 @@ class EventCallbackImpl(EventCallbackHandler):
     abiparser: DatatypeParser = None
 
     def on_event(self, eventdata):
-        blockNumber = eventdata["logs"][0]['blockNumber']
         logresult = self.abiparser.parse_event_logs(eventdata["logs"])
-        #todo: judge the event whether equal the last event
         print("--------------------EventCallbackImpl--------------------\n")
+        blockNumber = eventdata["logs"][0]['blockNumber']
         logMix = logresult[0]['eventdata']
         logMixEvent = LogMixEvent(logMix[0],logMix[1], logMix[2], logMix[3])
         mix_result = _event_args_to_mix_result(logMixEvent)
-        #todo: recieve a root list from mixresult
         new_merkle_root = mix_result.new_merkle_root
         print("new_merkle_root in log: ", new_merkle_root)
         for wallet in make_wallet():
             # check merkel root
-            wallet.blockNumber = blockNumber
-            if new_merkle_root == wallet.merkle_tree.get_root():
-                print("")
+            if new_merkle_root==wallet.merkle_tree.get_root():
                 return
             # received_notes
             wallet.receive_notes(mix_result.output_events)
@@ -100,8 +103,9 @@ class EventCallbackImpl(EventCallbackHandler):
             print(f"The update_merkle_root in wallet of {wallet.username} is {update_merkle_root}")
 
 
-
-def event_sync(mixer_addr: str, blockNumber: int):
+@command()
+@option("--mixer-addr", help="The Groth16Mixer contract address you want to listen")
+def event_sync(mixer_addr: str):
 
     indexed_value = None
     try:
@@ -119,7 +123,13 @@ def event_sync(mixer_addr: str, blockNumber: int):
         abiparser = DatatypeParser(abifile)
         eventcallback = EventCallbackImpl()
         eventcallback.abiparser = abiparser
-# todo  event listening
+        blockNumber = 0
+        sqlSearch = "select * from merkletree"
+        cursor.execute(sqlSearch)
+        results = cursor.fetchall()
+        if results:
+            blockNumber = results[0][3]
+        print("blockNumber: ", blockNumber)
         result = bcos_event.register_eventlog_filter(
             eventcallback, abiparser, [mixer_addr], "LogMix", indexed_value, str(blockNumber+1))
         #result = bcos_event.register_eventlog_filter(eventcallback02,abiparser, [address], "on_number")
@@ -128,20 +138,20 @@ def event_sync(mixer_addr: str, blockNumber: int):
             "after register LogMix,result:{},all:{}".format(
                 result['result'], result))
 
-        while(not merkletree.objects.all().count() or not merkletree.objects.all().last().is_new):
-            print("sleep ",merkletree.objects.all().count())
-            # todo
-            time.sleep(5)
-
-        if bcos_event.client is not None:
-            bcos_event.client.finish()
-
+        while True:
+            print("waiting event...")
+            time.sleep(10)
     except Exception as e:
         print("Exception!")
         import traceback
         traceback.print_exc()
-
-
+        db.close()
+    finally:
+        print("event callback finished!")
+        if bcos_event.client is not None:
+            bcos_event.client.finish()
+            db.close()
+    sys.exit(-1)
 
 
 if __name__ == "__main__":
