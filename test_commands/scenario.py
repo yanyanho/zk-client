@@ -504,12 +504,12 @@ def compile_mixer() -> Interface:
     set_solc_version(SOL_COMPILER_VERSION)
     compiled_sol = compile_files([path_to_token], allow_paths=allowed_path)
     mixer_interface = compiled_sol[path_to_token + ":Groth16Mixer"]
-    # fo = open("./contract/mixer/abi/Groth16Mixer.abi", "w")
-    # fo1 = open("./contract/mixer/abi/Groth16Mixer.bin", "w")
-    # fo.write(str(mixer_interface["abi"]))
-    # fo.close()
-    # fo1.write(str(mixer_interface["bin"]))
-    # fo1.close()
+    fo = open("./contract/mixer/abi/Groth16Mixer.abi", "w")
+    fo1 = open("./contract/mixer/abi/Groth16Mixer.bin", "w")
+    fo.write(str(mixer_interface["abi"]))
+    fo.close()
+    fo1.write(str(mixer_interface["bin"]))
+    fo1.close()
     return mixer_interface
 
 def code_gen(abi_file):
@@ -520,3 +520,7 @@ def code_gen(abi_file):
     fo = open("./contract/mixer/abi/Groth16Mixer.py", "w")
     fo.write(template)
     fo.close()
+
+
+if __name__ == '__main__':
+    compile_mixer()

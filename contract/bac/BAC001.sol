@@ -1,4 +1,4 @@
-pragma solidity ^0.4.25;
+pragma solidity ^0.5.6;
 
 
 library Roles {
@@ -215,10 +215,6 @@ contract Suspendable is SuspenderRole {
 }
 
 contract IBAC001Receiver {
-    /**
-     * @notice Handle the receipt of an NFT
-     * @dev The BAC001 smart contract calls this function on the recipient
-     */
     function onBAC001Received(address operator, address from, uint256 value, bytes memory data)
     public returns (bytes4);
 }
@@ -245,6 +241,7 @@ contract BAC001 is IssuerRole, Suspendable {
     uint8 private  _minUnit;
 
     // Equals to `bytes4(keccak256("onBAC001Received(address,address,uint256,bytes)"))`
+
     bytes4 private constant _BAC001_RECEIVED = 0xc73d16ae;
 
 
@@ -275,16 +272,16 @@ contract BAC001 is IssuerRole, Suspendable {
         return _allowed[owner][spender];
     }
 
-    function send(address to, uint256 value, bytes data) public whenNotSuspended {
+    function send(address to, uint256 value, bytes memory data) public whenNotSuspended {
         _send(msg.sender, to, value, data);
         require(_checkOnBAC001Received(msg.sender, to, value, data), "BAC001: send to non BAC001Receiver implementer");
 
     }
 
-//    function safeSend(address to, uint256 value, bytes data) public whenNotSuspended {
-//        send(to, value, data);
-//        require(_checkOnBAC001Received(msg.sender, to, value, data), "BAC001: send to non BAC001Receiver implementer");
-//    }
+    //    function safeSend(address to, uint256 value, bytes data) public whenNotSuspended {
+    //        send(to, value, data);
+    //        require(_checkOnBAC001Received(msg.sender, to, value, data), "BAC001: send to non BAC001Receiver implementer");
+    //    }
 
 
     /**
@@ -298,7 +295,7 @@ contract BAC001 is IssuerRole, Suspendable {
     /**
      * @dev Send assets from one address to another.
      */
-    function sendFrom(address from, address to, uint256 value, bytes data) public whenNotSuspended {
+    function sendFrom(address from, address to, uint256 value, bytes memory data) public whenNotSuspended {
         _send(from, to, value, data);
         _approve(from, msg.sender, _allowed[from][msg.sender].sub(value));
         //add
@@ -307,14 +304,14 @@ contract BAC001 is IssuerRole, Suspendable {
 
     }
 
-//// safe todo
-//    function safeSendFrom(address from, address to, uint256 value, bytes data) public whenNotSuspended {
-//        sendFrom(from, to, value, data);
-//        require(_checkOnBAC001Received(from, to, value, data), "BAC001: send to non BAC001Receiver implementer");
-//    }
+    //// safe todo
+    //    function safeSendFrom(address from, address to, uint256 value, bytes data) public whenNotSuspended {
+    //        sendFrom(from, to, value, data);
+    //        require(_checkOnBAC001Received(from, to, value, data), "BAC001: send to non BAC001Receiver implementer");
+    //    }
 
 
-    function batchSend(address[] to, uint256[] values, bytes data) public whenNotSuspended {
+    function batchSend(address[] memory to, uint256[]  memory values, bytes memory data) public whenNotSuspended {
 
         // MUST Throw on errors
 
@@ -328,7 +325,7 @@ contract BAC001 is IssuerRole, Suspendable {
     }
 
 
-    function _checkOnBAC001Received(address from, address to, uint256 value, bytes data)
+    function _checkOnBAC001Received(address from, address to, uint256 value, bytes memory data)
     internal returns (bool)
     {
         if (!to.isContract()) {
@@ -356,14 +353,14 @@ contract BAC001 is IssuerRole, Suspendable {
         return true;
     }
 
-    function destroy(uint256 value, bytes data) public {
+    function destroy(uint256 value, bytes memory data) public {
         _destroy(msg.sender, value, data);
     }
 
     /**
      * @dev Burns a specific amount of assets from the target address and decrements allowance.
      */
-    function destroyFrom(address from, uint256 value, bytes data) public {
+    function destroyFrom(address from, uint256 value, bytes memory data) public {
         _destroyFrom(from, value, data);
     }
 
@@ -387,14 +384,14 @@ contract BAC001 is IssuerRole, Suspendable {
     }
 
 
-    function issue(address to, uint256 value, bytes data) public onlyIssuer returns (bool) {
+    function issue(address to, uint256 value, bytes memory data) public onlyIssuer returns (bool) {
         _issue(to, value, data);
         return true;
     }
     /**
      * @dev Send asset for a specified addresses.
      */
-    function _send(address from, address to, uint256 value, bytes data) internal {
+    function _send(address from, address to, uint256 value, bytes memory data) internal {
         require(to != address(0), "BAC001: send to the zero address");
 
         _balances[from] = _balances[from].sub(value);
@@ -405,7 +402,7 @@ contract BAC001 is IssuerRole, Suspendable {
     /**
      * @dev Internal function that issues an amount of the asset and assigns it to
      */
-    function _issue(address account, uint256 value, bytes data) internal {
+    function _issue(address account, uint256 value, bytes memory data) internal {
         require(account != address(0), "BAC001: issue to the zero address");
 
         _totalAmount = _totalAmount.add(value);
@@ -416,7 +413,7 @@ contract BAC001 is IssuerRole, Suspendable {
     /**
      * @dev Internal function that destroys an amount of the asset of a given
      */
-    function _destroy(address account, uint256 value, bytes data) internal {
+    function _destroy(address account, uint256 value, bytes memory data) internal {
         require(account != address(0), "BAC001: destroy from the zero address");
 
         _totalAmount = _totalAmount.sub(value);
@@ -438,7 +435,7 @@ contract BAC001 is IssuerRole, Suspendable {
     /**
      * @dev Internal function that destroys an amount of the asset of a given
      */
-    function _destroyFrom(address account, uint256 value, bytes data) internal {
+    function _destroyFrom(address account, uint256 value, bytes memory data) internal {
         _destroy(account, value, data);
         _approve(account, msg.sender, _allowed[account][msg.sender].sub(value));
     }

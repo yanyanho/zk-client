@@ -7,47 +7,24 @@ pragma experimental ABIEncoderV2;
 
 import "./MerkleTreeMiMC7.sol";
 
-// Declare the ERC20 interface in order to handle ERC20 tokens transfers to and
+// Declare the BAC001 interface in order to handle BAC001 tokens transfers to and
 // from the Mixer. Note that we only declare the functions we are interested in,
 // namely, transferFrom() (used to do a Deposit), and transfer() (used to do a
 // withdrawal)
-contract ERC20 {
-    function transferFrom(address from, address to, uint256 value) public;
-    function transfer(address to, uint256 value) public;
+contract BAC001 {
+    function sendFrom(address from, address to, uint256 value, bytes memory data) public;
+    function send(address to, uint256 value, bytes memory data) public;
 }
 
-// ERC223 token compatible contract
-contract ERC223ReceivingContract {
-    // See:
-    //   https://github.com/Dexaran/ERC223-token-standard/blob/Recommended/Receiver_Interface.sol
-    struct Token {
-        address sender;
-        uint256 value;
-        bytes data;
-        bytes4 sig;
-    }
-
-    function tokenFallback(address from, uint256 value, bytes memory data)
-        public pure {
-        Token memory tkn;
-        tkn.sender = from;
-        tkn.value = value;
-        tkn.data = data;
-
-         // See:
-         //   https://solidity.readthedocs.io/en/v0.5.5/types.html#conversions-between-elementary-types
-        uint32 u =
-            uint32(bytes4(data[0])) +
-            uint32(bytes4(data[1]) >> 8) +
-            uint32(bytes4(data[2]) >> 16) +
-            uint32(bytes4(data[3]) >> 24);
-        tkn.sig = bytes4(u);
+contract BAC001Holder {
+    function onBAC001Received(address, address, uint256, bytes memory) public returns (bytes4) {
+        return this.onBAC001Received.selector;
     }
 }
 
 // BaseMixer implements the functions shared across all Mixers (regardless which
 // zkSNARK is used)
-contract BaseMixer is MerkleTreeMiMC7, ERC223ReceivingContract {
+contract BaseMixer is MerkleTreeMiMC7, BAC001Holder {
 
     // The roots of the different updated trees
     mapping(bytes32 => bool) roots;
@@ -346,8 +323,8 @@ contract BaseMixer is MerkleTreeMiMC7, ERC223ReceivingContract {
         // If the vpub_in is > 0, we need to make sure the right amount is paid
         if (vpub_in > 0) {
             if (token != address(0)) {
-                ERC20 erc20Token = ERC20(token);
-                erc20Token.transferFrom(msg.sender, address(this), vpub_in);
+                BAC001 bac001Token = BAC001(token);
+                bac001Token.sendFrom(msg.sender, address(this), vpub_in,'');
             } else {
                 require(
                     msg.value == vpub_in,
@@ -366,8 +343,8 @@ contract BaseMixer is MerkleTreeMiMC7, ERC223ReceivingContract {
         // msg.sender and send him the appropriate value IF proof is valid
         if (vpub_out > 0) {
             if (token != address(0)) {
-                ERC20 erc20Token = ERC20(token);
-                erc20Token.transfer(msg.sender, vpub_out);
+                BAC001 bac001Token = BAC001(token);
+                bac001Token.send(msg.sender, vpub_out, "");
             } else {
                 (bool success, ) = msg.sender.call.value(vpub_out)("");
                 require(success, "vpub_out transfer failed");

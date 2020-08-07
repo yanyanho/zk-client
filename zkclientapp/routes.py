@@ -3,7 +3,7 @@ from commands.zeth_gen_address import gen_address
 from commands.event_sync import event_sync
 from commands.zeth_deposit import deposit
 from commands.zeth_token_approve import token_approve
-from commands.zeth_token_deploy import deploy_token
+from commands.zeth_token_deploy import  deploy_asset
 from commands.zeth_deploy import deploy
 from commands.zeth_mix import mix
 from commands.zeth_ls_commits import ls_commits
@@ -19,6 +19,8 @@ import time
 from django.http import JsonResponse
 from os.path import exists
 from typing import List, Tuple
+
+from zeth.wallet import _ensure_dir
 from . import models
 from .models import merkletree
 
@@ -111,7 +113,7 @@ token_amount:int --help: the total amount of bac
 def deployToken(request) -> None:
 	result = {}
 	req = json.loads(request.body)
-	token_address = deploy_token(req['miner_address'], req['token_amount'])
+	token_address = deploy_asset(req['miner_address'], req['token_amount'])
 	if token_address :
 		result['status'] = 0
 		result['address'] = str(token_address)
