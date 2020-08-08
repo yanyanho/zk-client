@@ -266,14 +266,13 @@ class sqlMerkleTree(MerkleTree):
         if not results:
             json_str = json.dumps(self.tree_data.to_json_dict())
             print("json_str: ", json_str)
-            sqlInsert = "insert into merkletree (tree_data, is_new, blockNumber) values (%s, %s, %s);"
-            is_new= 1
-            cursor.execute(sqlSearch, [json_str, is_new, blockNumber])
+            print("blockNumber: ", blockNumber)
+            sqlInsert = "insert into merkletree (tree_data, blockNumber) values (%s, %s);"
+            cursor.execute(sqlInsert, [json_str, blockNumber])
             db.commit()
         else:
             result = results[0]
             json_str = json.dumps(self.tree_data.to_json_dict())
-            is_new = 1
             #json_str = pymysql.escape_string(json_str)
             #print("json_str: ", json_str)
             '''
@@ -283,9 +282,9 @@ class sqlMerkleTree(MerkleTree):
             sqlUpdate4 = ") where MID=%s;"%result[0]
             sqlUpdate = sqlUpdate1 + sqlUpdate2 + sqlUpdate3 + sqlUpdate4
             '''
-            sqlUpdate = "update merkletree set tree_data=%s, is_new=%s, blockNumber=%s where MID=%s;"
+            sqlUpdate = "update merkletree set tree_data=%s, blockNumber=%s where MID=%s;"
             #print("sqlUpdate: ", sqlUpdate)
-            cursor.execute(sqlUpdate, [json_str, is_new, blockNumber, result[0]])
+            cursor.execute(sqlUpdate, [json_str, blockNumber, result[0]])
             db.commit()
 
 

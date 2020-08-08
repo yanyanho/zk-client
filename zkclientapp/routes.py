@@ -359,11 +359,17 @@ username:str
 '''
 def getCommits(request) -> None:
 	result = {}
-	req = json.loads(request.body)
-	keystore_file = "{}/{}/{}".format(USER_DIR, req['username'], FISCO_ADDRESS_FILE)
-	addr_file = "{}/{}/{}".format(USER_DIR, req['username'], ADDRESS_FILE_DEFAULT)
+	#req = json.loads(request.body)
+	username = request.META.get('HTTP_USERNAME', 'unknown')
+	print("username: ", username)
+	keystore_file = "{}/{}/{}".format(USER_DIR, username, FISCO_ADDRESS_FILE)
+	addr_file = "{}/{}/{}".format(USER_DIR, username, ADDRESS_FILE_DEFAULT)
 	if exists(keystore_file) and exists(addr_file):
-		commits = ls_commits(req['username'])
+		commits = []
+		for commit in ls_commits(username):
+			comm = ''.join(['%02X' % b for b in commit])
+			commits.append(comm.lower())
+		print("commits: ", commits)
 		result['status'] = 0
 		result['commits'] = commits
 		return JsonResponse(result)

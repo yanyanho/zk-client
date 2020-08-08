@@ -95,6 +95,7 @@ class EventCallbackImpl(EventCallbackHandler):
                 return
             # received_notes
             wallet.blockNumber = blockNumber
+            print("blockNumber:", blockNumber)
             wallet.receive_notes(mix_result.output_events)
             spent_commits = wallet.mark_nullifiers_used(mix_result.nullifiers)
             for commit in spent_commits:
@@ -129,7 +130,7 @@ def event_sync(mixer_addr: str):
         cursor.execute(sqlSearch)
         results = cursor.fetchall()
         if results:
-            blockNumber = results[0][3]
+            blockNumber = results[0][2]
         print("blockNumber: ", blockNumber)
         result = bcos_event.register_eventlog_filter(
             eventcallback, abiparser, [mixer_addr], "LogMix", indexed_value, str(blockNumber+1))

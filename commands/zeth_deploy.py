@@ -9,7 +9,7 @@ from zeth.mixer_client import MixerClient
 from zeth.utils import EtherValue
 '''
 import json
-
+import ast
 from click import Context, command, option, pass_context
 from typing import Optional
 import sys
@@ -41,7 +41,7 @@ def deploy(
     constructArgs = [5, to_checksum_address(token_address), verification_key_params['Alpha'], verification_key_params['Beta1'], verification_key_params['Beta2'], verification_key_params['Delta1'], verification_key_params['Delta2'], verification_key_params['ABC_coords']]
 
     si = Groth16Mixer("")
-
+    '''
     fo = open("./contract/mixer/abi/Groth16Mixer.abi")
     abistring = fo.read()
     abi = json.loads(abistring)
@@ -49,9 +49,17 @@ def deploy(
     f1 = open("./contract/mixer/abi/Groth16Mixer.bin")
     bin = f1.read()
     f1.close()
+    '''
+    abi = []
+    binstr = ""
+    with open("./contract/mixer/abi/Groth16Mixer.abi", "r") as abistring:
+        abistr = abistring.readlines()[0]
+        abi = ast.literal_eval(abistr)
+    with open("./contract/mixer/abi/Groth16Mixer.bin", "r") as binstring:
+        binstr = binstring.readlines()[0]
 
     client = BcosClient()
-    mixerTransactionRecipient = client.sendRawTransactionGetReceipt("", abi, None, constructArgs, bin)
+    mixerTransactionRecipient = client.sendRawTransactionGetReceipt("", abi, None, constructArgs, binstr)
     mixer_address = mixerTransactionRecipient['contractAddress']
     print(f"deploy: mixer_address={mixer_address}")
     #mixer_instance = Groth16Mixer(address)
