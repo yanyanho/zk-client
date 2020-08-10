@@ -4,24 +4,19 @@ import time
 from typing import List
 
 import pymysql
-from click import command, option
+from click import command, option, argument
 
 from commands.constants import USER_DIR, WALLET_DIR_DEFAULT, \
-    ghost, gport, guser, gpassword, gdatabase
+    DATABASE_DEFAULT_ADDRESS, DATABASE_DEFAULT_PORT, DATABASE_DEFAULT_USER, DATABASE_DEFAULT_PASSWORD, \
+    DATABASE_DEFAULT_DATABASE
 from commands.utils import load_zeth_address
 from python_web3.client.bcosclient import BcosClient
 from python_web3.client.datatype_parser import DatatypeParser
 from python_web3.client.event_callback import BcosEventCallback
 from python_web3.client.event_callback import EventCallbackHandler
 from zeth.contracts import _event_args_to_mix_result
-import os
-from commands.constants import WALLET_USERNAME, FISCO_ADDRESS_FILE, USER_DIR, ADDRESS_FILE_DEFAULT, WALLET_DIR_DEFAULT, \
-    DATABASE_DEFAULT_ADDRESS, DATABASE_DEFAULT_PORT, DATABASE_DEFAULT_USER, DATABASE_DEFAULT_PASSWORD, DATABASE_DEFAULT_DATABASE
-from click import command, argument, option, pass_context, ClickException, Context
-from zeth.wallet import Wallet, ZethNoteDescription
-from commands.utils import load_zeth_address
-from typing import List
-import pymysql
+from zeth.wallet import Wallet
+
 '''
 def usage():
     usagetext = '\nUsage:\nparams: contractname address event_name indexed\n' \
@@ -112,7 +107,7 @@ class EventCallbackImpl(EventCallbackHandler):
 
 
 @command()
-@option("--mixer-addr", help="The Groth16Mixer contract address you want to listen")
+@argument("mixer_addr")
 def event_sync(mixer_addr: str):
 
     indexed_value = None

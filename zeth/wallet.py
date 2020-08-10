@@ -223,8 +223,9 @@ class Wallet:
 
     def update_and_save_state(self) -> None:
         #self.state.next_block = next_block
-        _save_state(self.state_file, self.state)
+
         self._save_merkle_tree_if_changed()
+        _save_state(self.state_file, self.state)
 
     def find_note(self, note_id: str) -> ZethNoteDescription:
         note_file = self._find_note_file(note_id)

@@ -4,7 +4,6 @@
 
 from __future__ import annotations
 
-from commands.constants import gdatabase, gpassword, guser, gport, ghost
 from zeth.mimc import MiMC7
 from os.path import exists, dirname, abspath
 import json
