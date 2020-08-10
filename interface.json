@@ -97,6 +97,33 @@
     "request": {
       "method": "POST",
       "uri": "/mixBac",
+      "body": {
+        "username": "hehe",
+        "password": "123456",
+        "token_amount": 20,
+        "vin": 0,
+        "vout": 0,
+        "mixer_address": "0x808b153005654821f8c9b2e9344807998734a999",
+        "token_address": "0x511003e45fdbfdc993d6a87b6c71dedda2fe5e09",
+        "input_notes": [
+          "29c6f32e",
+          "1b9e9873"
+        ],
+        "output_specs": [
+          "71640b0fe737a883b7a51ce81eb08c04c8504df17a8cff30e5bb0ad722fd7240:18c4a3ce86546a36aedb7d456cd5c29bc8986d02061e1249b5f9ff2bcc03d519,20"
+        ]
+      }
+    },
+     "response": {
+    "status": 0,
+    "text": "mix success"
+    }
+  },
+  {
+    "description": "zkbac withdraw",
+    "request": {
+      "method": "POST",
+      "uri": "/mixBac",
 
       "body": {
        "username": "hehe",
