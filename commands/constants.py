@@ -19,9 +19,8 @@ WALLET_DIR_DEFAULT = "wallet"
 WALLET_USERNAME = "zbac"
 USER_DIR = "user"
 
-# db config
-ghost = '127.0.0.1',
-gport = 3306,
-guser = 'root',
-gpassword = '8614',
-gdatabase = 'merkletree'
+DATABASE_DEFAULT_ADDRESS = "127.0.0.1"
+DATABASE_DEFAULT_PORT = 3306
+DATABASE_DEFAULT_USER = "root"
+DATABASE_DEFAULT_PASSWORD = "8614"
+DATABASE_DEFAULT_DATABASE = "merkletree"
