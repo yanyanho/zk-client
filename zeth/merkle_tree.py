@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: LGPL-3.0+
 
 from __future__ import annotations
+
+from commands.constants import gdatabase, gpassword, guser, gport, ghost
 from zeth.mimc import MiMC7
 from os.path import exists, dirname, abspath
 import json
@@ -15,11 +17,11 @@ import sys
 #from zkserverapp.models import merkletree
 import pymysql
 db = pymysql.connect(
-    host='127.0.0.1',
-    port=3306,
-    user='root',
-    password='8614',
-    database='merkletree',
+    host=ghost,
+    port=gport,
+    user=guser,
+    password=gpassword,
+    database=gdatabase,
     charset='utf8'
     )
 cursor = db.cursor()

@@ -18,3 +18,10 @@ ADDRESS_FILE_DEFAULT = "zeth-address.json"
 WALLET_DIR_DEFAULT = "wallet"
 WALLET_USERNAME = "zbac"
 USER_DIR = "user"
+
+# db config
+ghost = '127.0.0.1',
+gport = 3306,
+guser = 'root',
+gpassword = '8614',
+gdatabase = 'merkletree'
