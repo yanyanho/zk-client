@@ -10,7 +10,8 @@ from python_web3.client.event_callback import EventCallbackHandler
 from click import command, argument, option, pass_context, ClickException, Context
 from zeth.contracts import _event_args_to_mix_result
 import os
-from commands.constants import WALLET_USERNAME, FISCO_ADDRESS_FILE, USER_DIR, ADDRESS_FILE_DEFAULT, WALLET_DIR_DEFAULT
+from commands.constants import WALLET_USERNAME, FISCO_ADDRESS_FILE, USER_DIR, ADDRESS_FILE_DEFAULT, WALLET_DIR_DEFAULT, \
+    DATABASE_DEFAULT_ADDRESS, DATABASE_DEFAULT_PORT, DATABASE_DEFAULT_USER, DATABASE_DEFAULT_PASSWORD, DATABASE_DEFAULT_DATABASE
 from click import command, argument, option, pass_context, ClickException, Context
 from zeth.wallet import Wallet, ZethNoteDescription
 from commands.utils import load_zeth_address
@@ -39,11 +40,11 @@ def usage():
     print(usagetext)
 '''
 db = pymysql.connect(
-    host='127.0.0.1',
-    port=3306,
-    user='root',
-    password='8614',
-    database='merkletree',
+    host = DATABASE_DEFAULT_ADDRESS,
+    port = DATABASE_DEFAULT_PORT,
+    user = DATABASE_DEFAULT_USER,
+    password = DATABASE_DEFAULT_PASSWORD,
+    database = DATABASE_DEFAULT_DATABASE,
     charset='utf8'
     )
 cursor = db.cursor()

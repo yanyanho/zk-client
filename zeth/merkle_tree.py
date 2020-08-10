@@ -8,18 +8,18 @@ from os.path import exists, dirname, abspath
 import json
 import math
 from typing import Dict, List, Tuple, Iterator, cast, Any
-
+from commands.constants import DATABASE_DEFAULT_ADDRESS, DATABASE_DEFAULT_PORT, DATABASE_DEFAULT_USER, DATABASE_DEFAULT_PASSWORD, DATABASE_DEFAULT_DATABASE
 import sys
 #sys.path.append('../zkservice/zkserver')
 #sys.path.append('./zkservice/zkserver')
 #from zkserverapp.models import merkletree
 import pymysql
 db = pymysql.connect(
-    host='127.0.0.1',
-    port=3306,
-    user='root',
-    password='8614',
-    database='merkletree',
+    host = DATABASE_DEFAULT_ADDRESS,
+    port = DATABASE_DEFAULT_PORT,
+    user = DATABASE_DEFAULT_USER,
+    password = DATABASE_DEFAULT_PASSWORD,
+    database = DATABASE_DEFAULT_DATABASE,
     charset='utf8'
     )
 cursor = db.cursor()
