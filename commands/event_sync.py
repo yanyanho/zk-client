@@ -1,13 +1,18 @@
+import os
 import sys
+import time
+from typing import List
+
+import pymysql
+from click import command, option
+
+from commands.constants import USER_DIR, WALLET_DIR_DEFAULT, \
+    ghost, gport, guser, gpassword, gdatabase
+from commands.utils import load_zeth_address
 from python_web3.client.bcosclient import BcosClient
 from python_web3.client.datatype_parser import DatatypeParser
-from python_web3.client.contractnote import ContractNote
-import json
-import time
-from python_web3.client.channel_push_dispatcher import ChannelPushHandler
 from python_web3.client.event_callback import BcosEventCallback
 from python_web3.client.event_callback import EventCallbackHandler
-from click import command, argument, option, pass_context, ClickException, Context
 from zeth.contracts import _event_args_to_mix_result
 import os
 from commands.constants import WALLET_USERNAME, FISCO_ADDRESS_FILE, USER_DIR, ADDRESS_FILE_DEFAULT, WALLET_DIR_DEFAULT, \
