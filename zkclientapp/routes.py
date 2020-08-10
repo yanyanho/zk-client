@@ -1,6 +1,6 @@
 from commands.zeth_gen_fisco_address import gen_fisco_address
 from commands.zeth_gen_address import gen_address
-from commands.event_sync import event_sync
+#from commands.event_sync import event_sync
 from commands.zeth_deposit import deposit
 from commands.zeth_token_approve import token_approve
 from commands.zeth_token_deploy import  deploy_asset
@@ -188,6 +188,7 @@ def depositBac(request) -> None:
 	keystore_file = "{}/{}/{}".format(USER_DIR, req['username'], FISCO_ADDRESS_FILE)
 	addr_file = "{}/{}/{}".format(USER_DIR, req['username'], ADDRESS_FILE_DEFAULT)
 	if exists(keystore_file) and exists(addr_file) :
+		'''
 		while (merkletree.objects.all().count() and not merkletree.objects.all().last().is_new):
 			time.sleep(1)
 			print("sleep")
@@ -197,6 +198,7 @@ def depositBac(request) -> None:
 			sqlResult.is_new = False
 			sqlResult.save()
 			blockNumber = sqlResult.blockNumber
+		'''
 		outputapprove = token_approve(req['token_amount'], req['mixer_address'], req['token_address'], req['username'], req['password'])
 		if outputapprove :
 			zeth_address = load_zeth_address(req['username'])
@@ -208,6 +210,7 @@ def depositBac(request) -> None:
 			outputdeposit = deposit(req['mixer_address'], req['username'], req['password'], req['token_amount'], output_specs)
 			# todo
 			if outputdeposit :
+				'''
 				event_sync(req['mixer_address'], blockNumber)
 				js_secret = load_zeth_address_secret(req['username'])
 				wallet = open_wallet(None, js_secret, req['username'])
@@ -219,11 +222,16 @@ def depositBac(request) -> None:
 				result['status'] = 0
 				result['commits'] = commits
 				result['total_value'] = total.ether()
+				'''
+				result['status'] = 0
+				result['text'] = 'deposit success'
 				return JsonResponse(result)
 			else:
+				'''
 				if models.merkletree.objects.all().count():
 					sqlResult.is_new = True
 					sqlResult.save()
+				'''
 				result['status'] = 1
 				result['text'] = 'deposit failed'
 				return JsonResponse(result)
@@ -272,16 +280,23 @@ def mixBac(request) -> None:
 			result['status'] = 1
 			result['text'] = 'input and output value mismatch'
 			return JsonResponse(result)
+		'''
 		while (merkletree.objects.all().count() and not merkletree.objects.all().last().is_new):
 			time.sleep(1)
 		sqlResult = merkletree.objects.all().last()
 		if sqlResult:
 			sqlResult.is_new = False
 			sqlResult.save()
+		'''
 		if req['vin']:
-			token_approve(req['vin'], req['mixer_address'], req['token_address'], req['username'], req['password'])
+			outputapprove = token_approve(req['vin'], req['mixer_address'], req['token_address'], req['username'], req['password'])
+			if not outputapprove:
+				result['status'] = 1
+				result['text'] = 'token approve failed'
+				return JsonResponse(result)
 		outputmix = mix(req['mixer_address'], req['username'], req['password'], vin_pub, vout_pub, inputs, outputs)
 		if outputmix:
+			'''
 			event_sync(req['mixer_address'],sqlResult.blockNumber)
 			total = EtherValue(0)
 			commits = []
@@ -291,11 +306,16 @@ def mixBac(request) -> None:
 			result['status'] = 0
 			result['commits'] = commits
 			result['total_value'] = total.ether()
+			'''
+			result['status'] = 0
+			result['text'] = 'mix success'
 			return JsonResponse(result)
 		else:
+			'''
 			if merkletree.objects.all().count():
 				sqlResult.is_new = True
 				sqlResult.save()
+			'''
 			result['status'] = 1
 			result['text'] = 'mix failed'
 			return JsonResponse(result)
@@ -339,11 +359,17 @@ username:str
 '''
 def getCommits(request) -> None:
 	result = {}
-	req = json.loads(request.body)
-	keystore_file = "{}/{}/{}".format(USER_DIR, req['username'], FISCO_ADDRESS_FILE)
-	addr_file = "{}/{}/{}".format(USER_DIR, req['username'], ADDRESS_FILE_DEFAULT)
+	#req = json.loads(request.body)
+	username = request.META.get('HTTP_USERNAME', 'unknown')
+	print("username: ", username)
+	keystore_file = "{}/{}/{}".format(USER_DIR, username, FISCO_ADDRESS_FILE)
+	addr_file = "{}/{}/{}".format(USER_DIR, username, ADDRESS_FILE_DEFAULT)
 	if exists(keystore_file) and exists(addr_file):
-		commits = ls_commits(req['username'])
+		commits = []
+		for commit in ls_commits(username):
+			comm = ''.join(['%02X' % b for b in commit])
+			commits.append(comm.lower())
+		print("commits: ", commits)
 		result['status'] = 0
 		result['commits'] = commits
 		return JsonResponse(result)

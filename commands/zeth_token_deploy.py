@@ -9,7 +9,7 @@ from zeth.mixer_client import MixerClient
 from zeth.utils import EtherValue
 '''
 import json
-
+import ast
 from click import Context, command, option, pass_context
 from typing import Optional
 from web3 import Web3
@@ -29,6 +29,14 @@ def deploy_asset(
     """
     # description, string memory shortName, uint8 minUnit, uint256 totalAmount
     constructArgs= [description,shortName,18,totalAmount]
+    abi = []
+    binstr = ""
+    with open("./contract/bac/abi/BAC001.abi", "r") as abistring:
+        abistr = abistring.readlines()[0]
+        abi = ast.literal_eval(abistr)
+    with open("./contract/bac/abi/BAC001.bin", "r") as binstring:
+        binstr = binstring.readlines()[0]
+    '''
     fo = open("./contract/bac/abi/BAC001.abi")
     abistring = fo.read()
     abi = json.loads(abistring)
@@ -36,6 +44,7 @@ def deploy_asset(
     f1 = open("./contract/bac/abi/BAC001.bin")
     bin = f1.read()
     f1.close()
+    '''
     client = BcosClient()
     assetTransactionRecipient = client.sendRawTransactionGetReceipt("", abi, None, constructArgs, bin, 30000000, 15)
     asset_address = assetTransactionRecipient['contractAddress']
