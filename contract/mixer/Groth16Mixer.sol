@@ -120,6 +120,7 @@ contract Groth16Mixer is BaseMixer {
 
         // 5. Emit the all Mix data
         emit LogMix(
+            mid,
             new_merkle_root,
             nullifiers,
             commitments,

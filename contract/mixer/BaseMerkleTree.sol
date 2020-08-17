@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-3.0+
 
 pragma solidity ^0.5.0;
+import "./MiMC7.sol";
 
 // Adapted from: https://github.com/zcash-hackworks/babyzoe
 
@@ -29,9 +30,9 @@ contract BaseMerkleTree {
 
     // Sparse array of populated leaves of the merkle tree.  Unpopulated leaves
     // have the DEFAULT_LEAF_VALUE.
-
-    bytes32[MAX_NUM_NODES] nodes;
-
+    uint  public mid = 0;
+//    bytes32[MAX_NUM_NODES] nodes;
+    mapping(uint => bytes32[MAX_NUM_NODES]) nodesWithMid;
     // Number of leaves populated in `nodes`.
     uint256 num_leaves;
 
@@ -43,6 +44,24 @@ contract BaseMerkleTree {
         require (
             treeDepth == DEPTH,
             "Invalid depth in BaseMerkleTree");
+    }
+
+
+      function initializeTree() internal
+    {
+        // First layer
+        bytes32 default_value = DEFAULT_LEAF_VALUE;
+
+        nodesWithMid[mid][2 * MAX_NUM_LEAVES - 2] = default_value;
+        uint256 layer_size = MAX_NUM_LEAVES / 2;
+
+        // Subsequent layers
+        while (layer_size > 0) {
+            default_value = MiMC7.hash(default_value, default_value);
+            uint256 layer_final_entry_idx = 2 * layer_size - 2;
+            nodesWithMid[mid][layer_final_entry_idx] = default_value;
+            layer_size = layer_size / 2;
+        }
     }
 
     // Appends a commitment to the tree, and returns its address
@@ -58,9 +77,16 @@ contract BaseMerkleTree {
         // Address of the next leaf is the current number of leaves (before
         // insertion).  Compute the next index in the full set of nodes, and
         // write.
+         ++num_leaves;
+       if(num_leaves == MAX_NUM_LEAVES) {
+           mid = mid+1;
+
+        }
+        num_leaves =  num_leaves % MAX_NUM_LEAVES;
+
         uint256 next_address = num_leaves;
-        ++num_leaves;
+
         uint256 next_entry_idx = (MAX_NUM_LEAVES - 1) + next_address;
-        nodes[next_entry_idx] = commitment;
+        nodesWithMid[mid][next_entry_idx] = commitment;
     }
 }

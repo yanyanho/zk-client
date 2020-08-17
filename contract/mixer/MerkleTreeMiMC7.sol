@@ -26,14 +26,15 @@ contract MerkleTreeMiMC7 is BaseMerkleTree
     {
         // First layer
         bytes32 default_value = DEFAULT_LEAF_VALUE;
-        nodes[2 * MAX_NUM_LEAVES - 2] = default_value;
+
+        nodesWithMid[mid][2 * MAX_NUM_LEAVES - 2] = default_value;
         uint256 layer_size = MAX_NUM_LEAVES / 2;
 
         // Subsequent layers
         while (layer_size > 0) {
             default_value = MiMC7.hash(default_value, default_value);
             uint256 layer_final_entry_idx = 2 * layer_size - 2;
-            nodes[layer_final_entry_idx] = default_value;
+            nodesWithMid[mid][layer_final_entry_idx] = default_value;
             layer_size = layer_size / 2;
         }
     }
@@ -54,7 +55,7 @@ contract MerkleTreeMiMC7 is BaseMerkleTree
             layer_size = layer_size / 2;
         }
 
-        return nodes[0];
+        return nodesWithMid[mid][0];
     }
 
     // Recompute nodes in the parent layer that are affected by entries
@@ -96,8 +97,8 @@ contract MerkleTreeMiMC7 is BaseMerkleTree
         uint256 child_left_idx;
         if ((child_end_idx & 1) != 0) {
             child_left_idx = child_layer_start + child_end_idx - 1;
-            nodes[(child_left_idx - 1) / 2] =
-                MiMC7.hash(nodes[child_left_idx], nodes[2 * child_layer_start]);
+            nodesWithMid[mid][(child_left_idx - 1) / 2] =
+                MiMC7.hash(nodesWithMid[mid][child_left_idx], nodesWithMid[mid][2 * child_layer_start]);
         } else {
             child_left_idx = child_layer_start + child_end_idx;
         }
@@ -107,8 +108,8 @@ contract MerkleTreeMiMC7 is BaseMerkleTree
 
         while (child_left_idx > child_left_idx_rend) {
             child_left_idx = child_left_idx - 2;
-            nodes[(child_left_idx - 1) / 2] =
-                MiMC7.hash(nodes[child_left_idx], nodes[child_left_idx + 1]);
+            nodesWithMid[mid][(child_left_idx - 1) / 2] =
+                MiMC7.hash(nodesWithMid[mid][child_left_idx], nodesWithMid[mid][child_left_idx + 1]);
         }
 
         return (child_start_idx / 2, (child_end_idx + 1) / 2);

@@ -51,10 +51,12 @@ cursor = db.cursor()
 class LogMixEvent(object):
     def __init__(
             self,
+            mid: int,
             root: bytes,
             nullifiers: bytes(2),
             commitments: bytes(2),
             ciphertexts: bytes(2)):
+        self.mid = mid
         self.root = root
         self.nullifiers = nullifiers
         self.commitments = commitments
