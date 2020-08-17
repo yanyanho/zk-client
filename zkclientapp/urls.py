@@ -17,7 +17,7 @@ urlpatterns = [
     url(r'^get$', views.get),
     url(r'^post\.html$', views.post_html),
     url(r'^post$', views.post),
-    url(r'^genFiscoAddr$', routes.genFiscoAddr),
+    #url(r'^genFiscoAddr$', routes.genFiscoAddr),
     url(r'^genZbacAddr$', routes.genZbacAddr),
     url(r'^deployToken$', routes.deployToken),
     url(r'^deployMixer$', routes.deployMixer),
@@ -26,4 +26,6 @@ urlpatterns = [
     url(r'^sendAsset$', routes.sendAsset),
     url(r'^getNotes$', routes.getNotes),
     url(r'^getCommits$', routes.getCommits),
+    url(r'^checkUser$', routes.checkUser),
+    url(r'^genAccount$', routes.genAccount),
 ]
