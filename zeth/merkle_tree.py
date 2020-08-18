@@ -264,6 +264,7 @@ class sqlMerkleTree(MerkleTree):
         sqlSearch = "select * from merkletree"
         cursor.execute(sqlSearch)
         results = cursor.fetchall()
+        db.commit()
         if not results:
             json_str = json.dumps(self.tree_data.to_json_dict())
             print("json_str: ", json_str)
