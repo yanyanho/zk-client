@@ -72,6 +72,7 @@ contract BaseMerkleTree {
          if( num_leaves==MAX_NUM_LEAVES) {
              mid = mid+1;
              num_leaves =  num_leaves % MAX_NUM_LEAVES;
+             initializeTree();
          }
 
         require(
