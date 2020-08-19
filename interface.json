@@ -125,7 +125,7 @@
       "status": 0,
     "commits": []
     }
-  }
+  },
   {
     "description": "getNotes",
     "request": {
@@ -180,6 +180,59 @@
     "fisco_address": "0xc0c5e664442b3d5f0aa4d30e900d5aeeef596e04",
     "privatekey": "0x3fa34c3f31a42c65c4c7056d05d3130f4d0d29bba81266de06b79be3cf80740e",
     "zbac_address": "d3603132dbaf076060d16d911a4adf8d6624b60510a819def82599353a0685ec:8f37a09af7b7469a5b7bef573e941521e8cc8ef6c528b30a16a5b7bb211f7362"
+      }
+  },
+//获取Bac合约的信息
+  {
+    "description": "getBacContract",
+    "request": {
+      "method": "GET",
+      "uri": "/getBacContract",
+    },
+    "response": {
+      "status": 0,
+    "conName": "BAC001",
+    "conType":"bac",
+    "conAddr":"0x511003e45fdbfdc993d6a87b6c71dedda2fe5e09",
+    "time":"",
+    "owner":"0xc0c5e664442b3d5f0aa4d30e900d5aeeef596e04",
+    "totalAmount":0,
+    "shortName":"zk-AAA-demo"
+    }
+  },
+//获取Mixer合约的信息
+  {
+    "description": "getMixerContract",
+    "request": {
+      "method": "GET",
+      "uri": "/getMixerContract",
+    },
+    "response": {
+      "status": 0,
+    "conName": "Groth16Mixer",
+    "conType":"mixer",
+    "conAddr":"0x808b153005654821f8c9b2e9344807998734a999",
+    "time":"",
+    "owner":"0xc0c5e664442b3d5f0aa4d30e900d5aeeef596e04",
+    "totalAmount":0,
+    "shortName":"mixer_test"
+    }
+  },
+//获取用户的历史交易信息
+  {
+  "description": "getTransactions",
+    "request": {
+      "method": "POST",
+      "uri": "/getTransactions",
+
+      "body": {
+        "username": "hehe",
+        "password": "123456"
+      }
+    },
+    "response": {
+    "status": 0,
+    "transactions": [],
       }
   },
 ]

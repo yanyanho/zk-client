@@ -10,6 +10,7 @@ from commands.zeth_ls_commits import ls_commits
 from commands.zeth_ls_notes import ls_notes
 from commands.zeth_deploy import deploy
 from commands.utils import load_zeth_address, load_zeth_address_secret, open_wallet, parse_output, load_zeth_address_public
+from commands.constants import DATABASE_DEFAULT_ADDRESS, DATABASE_DEFAULT_PORT, DATABASE_DEFAULT_USER, DATABASE_DEFAULT_PASSWORD, DATABASE_DEFAULT_DATABASE
 from contract.BAC001 import BAC001
 from python_web3.client.bcoskeypair import BcosKeyPair
 from zeth.utils import EtherValue, from_zeth_units
@@ -25,6 +26,16 @@ from typing import List, Tuple
 from zeth.wallet import _ensure_dir
 from . import models
 from .models import merkletree
+import pymysql
+db = pymysql.connect(
+    host = DATABASE_DEFAULT_ADDRESS,
+    port = DATABASE_DEFAULT_PORT,
+    user = DATABASE_DEFAULT_USER,
+    password = DATABASE_DEFAULT_PASSWORD,
+    database = DATABASE_DEFAULT_DATABASE,
+    charset='utf8'
+    )
+cursor = db.cursor()
 
 '''
 The wallet of user is designed as that every wallet need to be specified a username and store the 
@@ -243,17 +254,6 @@ def depositBac(request) -> None:
 	keystore_file = "{}/{}/{}".format(USER_DIR, req['username'], FISCO_ADDRESS_FILE)
 	addr_file = "{}/{}/{}".format(USER_DIR, req['username'], ADDRESS_FILE_DEFAULT)
 	if exists(keystore_file) and exists(addr_file) :
-		'''
-		while (merkletree.objects.all().count() and not merkletree.objects.all().last().is_new):
-			time.sleep(1)
-			print("sleep")
-		sqlResult = merkletree.objects.all().last()
-		blockNumber = 1;
-		if sqlResult:
-			sqlResult.is_new = False
-			sqlResult.save()
-			blockNumber = sqlResult.blockNumber
-		'''
 		outputapprove = token_approve(req['token_amount'], req['mixer_address'], req['token_address'], req['username'], req['password'])
 		if outputapprove :
 			zeth_address = load_zeth_address(req['username'])
@@ -265,28 +265,16 @@ def depositBac(request) -> None:
 			outputdeposit = deposit(req['mixer_address'], req['username'], req['password'], req['token_amount'], output_specs)
 			# todo
 			if outputdeposit :
-				'''
-				event_sync(req['mixer_address'], blockNumber)
-				js_secret = load_zeth_address_secret(req['username'])
-				wallet = open_wallet(None, js_secret, req['username'])
-				total = EtherValue(0)
-				commits = []
-				for addr, short_commit, value in wallet.note_summaries():
-					total = total + value
-					commits.append(short_commit)
-				result['status'] = 0
-				result['commits'] = commits
-				result['total_value'] = total.ether()
-				'''
+				traType = "deposit"
+				output_specstr = output_specs[0] + ';' + output_specs[1]
+				timestr = time.strftime('%Y-%m-%d %H:%M:%S')
+				sqlInsert = "insert into transactions (traType, username, vin, vout, output_specs, time) values (%s, %s, %s, %s, %s, %s);"
+				cursor.execute(sqlInsert, [traType, req['username'], req['token_amount'], 0, output_specstr, timestr])
+				db.commit()
 				result['status'] = 0
 				result['text'] = 'deposit success'
 				return JsonResponse(result)
 			else:
-				'''
-				if models.merkletree.objects.all().count():
-					sqlResult.is_new = True
-					sqlResult.save()
-				'''
 				result['status'] = 1
 				result['text'] = 'deposit failed'
 				return JsonResponse(result)
@@ -329,20 +317,12 @@ def mixBac(request) -> None:
 		input_note_sum = from_zeth_units(
 			sum([int(note.value, 16) for _, note in inputs]))
 		output_note_sum = sum([value for _, value in outputs], EtherValue(0))
-		vin_pub = EtherValue(req['vin']  )
+		vin_pub = EtherValue(req['vin'])
 		vout_pub = EtherValue(req['vout'])
 		if vin_pub + input_note_sum != vout_pub + output_note_sum:
 			result['status'] = 1
 			result['text'] = 'input and output value mismatch'
 			return JsonResponse(result)
-		'''
-		while (merkletree.objects.all().count() and not merkletree.objects.all().last().is_new):
-			time.sleep(1)
-		sqlResult = merkletree.objects.all().last()
-		if sqlResult:
-			sqlResult.is_new = False
-			sqlResult.save()
-		'''
 		if req['vin']:
 			outputapprove = token_approve(req['vin'], req['mixer_address'], req['token_address'], req['username'], req['password'])
 			if not outputapprove:
@@ -351,26 +331,21 @@ def mixBac(request) -> None:
 				return JsonResponse(result)
 		outputmix = mix(req['mixer_address'], req['username'], req['password'], vin_pub, vout_pub, inputs, outputs)
 		if outputmix:
-			'''
-			event_sync(req['mixer_address'],sqlResult.blockNumber)
-			total = EtherValue(0)
-			commits = []
-			for addr, short_commit, value in wallet.note_summaries():
-				total = total + value
-				commits.append(short_commit)
-			result['status'] = 0
-			result['commits'] = commits
-			result['total_value'] = total.ether()
-			'''
+			traType = "mix"
+			timestr = time.strftime('%Y-%m-%d %H:%M:%S')
+			inputstr = ""
+			for note_id in req['input_notes']:
+				inputstr = inputstr + note_id + ';'
+			outputstr = ""
+			for out_spec in req['output_specs']:
+				outputstr = outputstr + out_spec + ';'
+			sqlInsert = "insert into transactions (traType, username, vin, vout, input_notes, output_specs, time) values (%s, %s, %s, %s, %s, %s, %s);"
+			cursor.execute(sqlInsert, [traType, req['username'], req['vin'], req['vout'], inputstr, outputstr, timestr])
+			db.commit()
 			result['status'] = 0
 			result['text'] = 'mix success'
 			return JsonResponse(result)
 		else:
-			'''
-			if merkletree.objects.all().count():
-				sqlResult.is_new = True
-				sqlResult.save()
-			'''
 			result['status'] = 1
 			result['text'] = 'mix failed'
 			return JsonResponse(result)
@@ -413,6 +388,7 @@ get all commiments in merkletree
 params:
 username:str
 '''
+'''
 def getCommits(request) -> None:
 	result = {}
 	#req = json.loads(request.body)
@@ -432,3 +408,72 @@ def getCommits(request) -> None:
 	result['status'] = 1
 	result['text'] = 'your account is not recorded in server, please import it firstly or create a new one'
 	return JsonResponse(result)
+'''
+def getBacContract(request) -> None:
+	result = {}
+	BACTYPE = "bac"
+	sqlSearchBac = "select * from contract where conType = %s"
+	cursor.execute(sqlSearchBac, [BACTYPE])
+	resultBac = cursor.fetchall()
+	db.commit()
+	if resultBac:
+		result['status'] = 0
+		result['conName'] = resultBac[0][0]
+		result['conType'] = resultBac[0][1]
+		result['conAddr'] = str(resultBac[0][2])
+		result['time'] = resultBac[0][3]
+		result['owner'] = resultBac[0][4]
+		result['totalAmount'] = resultBac[0][5]
+		result['shortName'] = resultBac[0][6]
+		return JsonResponse(result)
+	result['status'] = 1
+	result['text'] = 'bac token contract does not exist'
+	return JsonResponse(result)
+
+def getMixerContract(request) -> None:
+	result = {}
+	MIXERTYPE = "mixer"
+	sqlSearchMixer = "select * from contract where conType = %s"
+	cursor.execute(sqlSearchBac, [MIXERTYPE])
+	resultMixer = cursor.fetchall()
+	db.commit()
+	if resultMixer:
+		result['status'] = 0
+		result['conName'] = resultMixer[0][0]
+		result['conType'] = resultMixer[0][1]
+		result['conAddr'] = str(resultMixer[0][2])
+		result['time'] = resultMixer[0][3]
+		result['owner'] = resultMixer[0][4]
+		result['totalAmount'] = resultMixer[0][5]
+		result['shortName'] = resultMixer[0][6]
+		return JsonResponse(result)
+	result['status'] = 1
+	result['text'] = 'mixer contract does not exist'
+	return JsonResponse(result)
+
+def getTransactions(request) -> None:
+	result = {}
+	req = json.loads(request.body)
+	keystore_file = "{}/{}/{}".format(USER_DIR, req['username'], FISCO_ADDRESS_FILE)
+	if exists(keystore_file):
+		with open(keystore_file, "r") as dump_f:
+			keytext = json.load(dump_f)
+			privatekey = Account.decrypt(keytext, req['password'])
+			if privatekey:
+				sqlSearch = "select * from transactions where username = %s"
+				cursor.execute(sqlSearch, [req['username']])
+				results = cursor.fetchall()
+				db.commit()
+				result['transactions'] = []
+				for resultTra in results:
+					result['transactions'].append(resultTra)
+				result['status'] = 0
+				return JsonResponse(result)
+			else:
+				result['status'] = 1
+				result['text'] = 'password not true'
+				return JsonResponse(result)
+	else:
+		result['status'] = 1
+		result['text'] = 'your account is not recorded in server, please import it firstly or create a new one'
+		return JsonResponse(result)

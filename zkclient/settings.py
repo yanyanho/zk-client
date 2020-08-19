@@ -77,7 +77,7 @@ WSGI_APPLICATION = 'zkclient.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'zkclient',
+        'NAME': 'zbac',
         'USER': 'root',
         'PASSWORD': 'xBj2019',
         'HOST':'39.108.248.156',

@@ -250,6 +250,7 @@ class sqlMerkleTree(MerkleTree):
         sqlSearch = "select * from merkletree"
         cursor.execute(sqlSearch)
         results = cursor.fetchall()
+        db.commit()
         if not results:
             tree_data = MerkleTreeData.empty_with_depth(depth)
         else:
