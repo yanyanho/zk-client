@@ -36,8 +36,9 @@ class ZethNoteDescription:
     All secret data about a single ZethNote, including address in the merkle
     tree and the commit value.
     """
-    def __init__(self, note: ZethNote, address: int, commitment: bytes):
+    def __init__(self, note: ZethNote, mid: int, address: int, commitment: bytes):
         self.note = note
+        self.mid = mid
         self.address = address
         self.commitment = commitment
 
@@ -50,6 +51,7 @@ class ZethNoteDescription:
     def to_json(self) -> str:
         json_dict = {
             "note": zeth_note_to_json_dict(self.note),
+            "mid": str(self.mid),
             "address": str(self.address),
             "commitment": self.commitment.hex(),
         }
@@ -60,6 +62,7 @@ class ZethNoteDescription:
         json_dict = json.loads(json_str)
         return ZethNoteDescription(
             note=zeth_note_from_json_dict(json_dict["note"]),
+            mid = int(json_dict["mid"]),
             address=int(json_dict["address"]),
             commitment=bytes.fromhex(json_dict["commitment"]))
 
@@ -122,7 +125,9 @@ class Wallet:
             mixer_instance: Any,
             username: str,
             wallet_dir: str,
-            secret_address: ZethAddressPriv):
+            secret_address: ZethAddressPriv,
+            mid: int,
+            next_addr: int):
         # k_sk_receiver: EncryptionSecretKey):
         assert "_" not in username
         self.mixer_instance = mixer_instance
@@ -132,15 +137,20 @@ class Wallet:
         self.k_sk_receiver = secret_address.k_sk
         self.state_file = join(wallet_dir, f"state_{username}")
         self.state = _load_state_or_default(self.state_file)
+        self.mid = mid
+        self.next_addr = next_addr
         _ensure_dir(join(self.wallet_dir, SPENT_SUBDIRECTORY))
+        '''
         self.merkle_tree = sqlMerkleTree.open(
             int(math.pow(2, ZETH_MERKLE_TREE_DEPTH)))
         self.merkle_tree_changed = False
         self.next_addr = self.merkle_tree.get_num_entries()
         self.blockNumber = 1;
+        '''
 
     def receive_note(
             self,
+            mid: int,
             comm_addr: int,
             out_ev: MixOutputEvents) -> Optional[ZethNoteDescription]:
         # Check this output event to see if it belongs to this wallet.
@@ -152,7 +162,7 @@ class Wallet:
         if not _check_note(commit, note):
             return None
 
-        note_desc = ZethNoteDescription(note, comm_addr, commit)
+        note_desc = ZethNoteDescription(note, mid, comm_addr, commit)
         self._write_note(note_desc)
 
         # Add the nullifier to the map in the state file
@@ -170,20 +180,30 @@ class Wallet:
         """
         new_notes = []
 
-        self.merkle_tree_changed = len(output_events) != 0
+        #self.merkle_tree_changed = len(output_events) != 0
+        '''
+        if self.next_addrs[0] == self.next_addrs[1]:
+            self.next_addrs[1] = self.next_addrs[0] + 1
+        for i in range(2):
+            print(
+                f"wallet.receive_notes: idx:{self.next_addrs[i]}, " +
+                f"comm:{output_events[i].commitment[:8].hex()}")
+            note_desc = self.receive_note(self.mids[i], self.next_addrs[i], output_events[i])
+            if note_desc is not None:
+                new_notes.append(note_desc)
+        '''
         for out_ev in output_events:
             print(
                 f"wallet.receive_notes: idx:{self.next_addr}, " +
                 f"comm:{out_ev.commitment[:8].hex()}")
 
             # All commitments must be added to the tree in order.
-            self.merkle_tree.insert(out_ev.commitment)
-            note_desc = self.receive_note(self.next_addr, out_ev)
+            #self.merkle_tree.insert(out_ev.commitment)
+            note_desc = self.receive_note(self.mid, self.next_addr, out_ev)
             if note_desc is not None:
                 new_notes.append(note_desc)
 
             self.next_addr = self.next_addr + 1
-
         # Record full set of notes seen to keep an estimate of the total in the
         # mixer.
         self.state.num_notes = self.state.num_notes + len(output_events)
@@ -217,28 +237,15 @@ class Wallet:
         """
         return self._decode_note_files_in_dir(
             join(self.wallet_dir, SPENT_SUBDIRECTORY))
-
+    '''
     def get_next_block(self) -> int:
         return self.state.next_block
-
+    '''
     def update_and_save_state(self) -> None:
         #self.state.next_block = next_block
 
-        self._save_merkle_tree_if_changed()
+        #self._save_merkle_tree_if_changed()
         _save_state(self.state_file, self.state)
-
-    def find_note(self, note_id: str) -> ZethNoteDescription:
-        note_file = self._find_note_file(note_id)
-        if not note_file:
-            raise Exception(f"no note with id {note_id}")
-        with open(note_file, "r") as note_f:
-            return ZethNoteDescription.from_json(note_f.read())
-
-    def _save_merkle_tree_if_changed(self) -> None:
-        if self.merkle_tree_changed:
-            self.merkle_tree_changed = False
-            self.merkle_tree.recompute_root()
-            self.merkle_tree.save(self.blockNumber)
 
     def _write_note(self, note_desc: ZethNoteDescription) -> None:
         """
@@ -247,6 +254,13 @@ class Wallet:
         note_filename = join(self.wallet_dir, self._note_basename(note_desc))
         with open(note_filename, "w") as note_f:
             note_f.write(note_desc.to_json())
+
+    def find_note(self, note_id: str) -> ZethNoteDescription:
+        note_file = self._find_note_file(note_id)
+        if not note_file:
+            raise Exception(f"no note with id {note_id}")
+        with open(note_file, "r") as note_f:
+            return ZethNoteDescription.from_json(note_f.read())
 
     def _mark_note_spent(self, nullifier_hex: str, short_commit: str) -> None:
         """
@@ -264,15 +278,15 @@ class Wallet:
     def _note_basename(self, note_desc: ZethNoteDescription) -> str:
         value_eth = from_zeth_units(int(note_desc.note.value, 16)).ether()
         cm_str = short_commitment(note_desc.commitment)
-        return "note_%s_%04d_%s_%s" % (
-            self.username, note_desc.address, cm_str, value_eth)
+        return "note_%s_%d_%04d_%s_%s" % (
+            self.username, note_desc.mid, note_desc.address, cm_str, value_eth)
 
     @staticmethod
     def _decode_basename(filename: str) -> Tuple[int, str, EtherValue]:
         components = filename.split("_")
-        addr = int(components[2])
-        short_commit = components[3]
-        value = EtherValue(components[4], 'ether')
+        addr = int(components[3])
+        short_commit = components[4]
+        value = EtherValue(components[5], 'ether')
         return (addr, short_commit, value)
 
     def _decode_note_files_in_dir(

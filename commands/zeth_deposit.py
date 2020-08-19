@@ -6,14 +6,16 @@ from commands.utils import create_zeth_client_and_mixer_desc, \
     load_zeth_address, open_wallet, parse_output, do_sync
 from zeth.constants import JS_INPUTS, JS_OUTPUTS
 from commands.constants import PROVER_SERVER_ENDPOINT_DEFAULT
+from zeth.constants import ZETH_MERKLE_TREE_DEPTH
 from zeth.mixer_client import ZethAddressPub
 from zeth.utils import EtherValue, from_zeth_units
+from zeth.merkle_tree import sqlMerkleTree
 from api.zeth_messages_pb2 import ZethNote
 from click import ClickException
 from typing import List, Tuple, Optional
 from contract.Groth16Mixer import Groth16Mixer
 from python_web3.eth_account.account import Account
-
+import math
 
 def deposit(
         mixer_addr: str,
@@ -35,9 +37,10 @@ def deposit(
     zeth_client = create_zeth_client_and_mixer_desc(PROVER_SERVER_ENDPOINT_DEFAULT, mixer_addr, username, password)
 
     zeth_address = load_zeth_address(username)
+    '''
     wallet = open_wallet(
-        zeth_client.mixer_instance, zeth_address.addr_sk, username)
-
+        zeth_client.mixer_instance, zeth_address.addr_sk, username, )
+    '''
     outputs: List[Tuple[ZethAddressPub, EtherValue]] = [
         parse_output(out_spec) for out_spec in output_specs]
 
@@ -52,9 +55,11 @@ def deposit(
     tx_value: Optional[EtherValue] = EtherValue(0)
     #if mixer_desc.token:
     #    tx_value = EtherValue(0)
-
+    merkle_trees = []
+    for i in range(2):
+        merkle_trees.append(sqlMerkleTree.open(int(math.pow(2, ZETH_MERKLE_TREE_DEPTH)), 0))
     (outputresult, receipt) = zeth_client.deposit(
-        wallet.merkle_tree,
+        merkle_trees,
         zeth_address,
         fisco_bcos_address,
         vin_pub,
