@@ -22,23 +22,6 @@ contract MerkleTreeMiMC7 is BaseMerkleTree
         initializeTree();
     }
 
-    function initializeTree() private
-    {
-        // First layer
-        bytes32 default_value = DEFAULT_LEAF_VALUE;
-
-        nodesWithMid[mid][2 * MAX_NUM_LEAVES - 2] = default_value;
-        uint256 layer_size = MAX_NUM_LEAVES / 2;
-
-        // Subsequent layers
-        while (layer_size > 0) {
-            default_value = MiMC7.hash(default_value, default_value);
-            uint256 layer_final_entry_idx = 2 * layer_size - 2;
-            nodesWithMid[mid][layer_final_entry_idx] = default_value;
-            layer_size = layer_size / 2;
-        }
-    }
-
     function recomputeRoot(uint num_new_leaves) internal returns (bytes32)
     {
         // Assume `num_new_leaves` have been written into the leaf slots.
