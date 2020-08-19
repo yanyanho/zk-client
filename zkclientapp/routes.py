@@ -26,6 +26,7 @@ from zeth.wallet import _ensure_dir
 from . import models
 from .models import merkletree
 
+
 '''
 The wallet of user is designed as that every wallet need to be specified a username and store the 
 reference accounts and assets data of that user. There two kinds of account in the wallet of a user,
