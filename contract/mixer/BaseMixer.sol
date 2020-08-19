@@ -27,7 +27,7 @@ contract BAC001Holder {
 contract BaseMixer is MerkleTreeMiMC7, BAC001Holder {
 
     // The roots of the different updated trees
-    mapping(bytes32 => bool) roots;
+    mapping(uint => mapping(bytes32 => bool)) roots;
 
     // The public list of nullifiers (prevents double spend)
     mapping(bytes32 => bool) nullifiers;
@@ -84,7 +84,7 @@ contract BaseMixer is MerkleTreeMiMC7, BAC001Holder {
     // The number of public inputs is:
     // - 1 (the root)
     // - jsIn (the nullifiers)
-    // - jsOut (the commitments)
+    // - jsOut (the commitments)   2
     // - 1 (hsig)
     // - JsIn (the message auth. tags)
     // - nb_field_residual (the residual bits not fitting in a single field
@@ -101,6 +101,7 @@ contract BaseMixer is MerkleTreeMiMC7, BAC001Holder {
 
     // solium complains if the parameters here are indented.
     event LogMix(
+    uint256 mid,
     bytes32 root,
     bytes32[jsIn] nullifiers,
     bytes32[jsOut] commitments,
@@ -112,8 +113,8 @@ contract BaseMixer is MerkleTreeMiMC7, BAC001Holder {
     // Constructor
     constructor(uint256 depth, address token_address) MerkleTreeMiMC7(depth)
         public {
-        bytes32 initialRoot = nodes[0];
-        roots[initialRoot] = true;
+        bytes32 initialRoot = nodesWithMid[0][0];
+        roots[0][initialRoot] = true;
 
         token = token_address;
 
@@ -274,7 +275,7 @@ contract BaseMixer is MerkleTreeMiMC7, BAC001Holder {
         internal {
         // 1. We re-assemble the full root digest and check it is in the tree
         require(
-            roots[bytes32(primary_inputs[0])],
+           checkRoot(primary_inputs),
             "Invalid root: This root doesn't exist"
         );
 
@@ -300,6 +301,14 @@ contract BaseMixer is MerkleTreeMiMC7, BAC001Holder {
             expected_hsig == hsig,
             "Invalid hsig: This hsig does not correspond to the hash of vk and the nfs"
         );
+    }
+
+    function checkRoot(uint256[nbInputs] memory primary_inputs) internal returns (bool){
+        for(uint i =0 ;i<=mid; i++) {
+            if(roots[i][bytes32(primary_inputs[0])])
+            return true;
+        }
+        return false;
     }
 
     function assemble_commitments_and_append_to_state(
@@ -353,6 +362,6 @@ contract BaseMixer is MerkleTreeMiMC7, BAC001Holder {
     }
 
     function add_merkle_root(bytes32 root) internal {
-        roots[root] = true;
+        roots[mid][root] = true;
     }
 }
