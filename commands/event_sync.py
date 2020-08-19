@@ -16,6 +16,9 @@ from python_web3.client.event_callback import BcosEventCallback
 from python_web3.client.event_callback import EventCallbackHandler
 from zeth.contracts import _event_args_to_mix_result
 from zeth.wallet import Wallet
+from zeth.merkle_tree import sqlMerkleTree
+from zeth.constants import ZETH_MERKLE_TREE_DEPTH
+import math
 
 '''
 def usage():
@@ -51,16 +54,18 @@ cursor = db.cursor()
 class LogMixEvent(object):
     def __init__(
             self,
+            mid: int,
             root: bytes,
             nullifiers: bytes(2),
             commitments: bytes(2),
             ciphertexts: bytes(2)):
+        self.mid = mid
         self.root = root
         self.nullifiers = nullifiers
         self.commitments = commitments
         self.ciphertexts = ciphertexts
 
-def make_wallet() -> List[Wallet]:
+def make_wallet(mid: int, next_addr: int) -> List[Wallet]:
     '''
     Return all the wallet in local server
     '''
@@ -68,7 +73,7 @@ def make_wallet() -> List[Wallet]:
     for username in os.listdir(USER_DIR):
         wallet_dir = "{}/{}/{}".format(USER_DIR, username, WALLET_DIR_DEFAULT)
         zeth_address = load_zeth_address(username)
-        wallet_list.append(Wallet(None, username, wallet_dir, zeth_address.addr_sk))
+        wallet_list.append(Wallet(None, username, wallet_dir, zeth_address.addr_sk, mid, next_addr))
     return wallet_list
 
 class EventCallbackImpl(EventCallbackHandler):
@@ -85,25 +90,39 @@ class EventCallbackImpl(EventCallbackHandler):
         logresult = self.abiparser.parse_event_logs(eventdata["logs"])
         print("--------------------EventCallbackImpl--------------------\n")
         blockNumber = eventdata["logs"][0]['blockNumber']
+        print("the blockNumber in log is :", blockNumber)
         logMix = logresult[0]['eventdata']
-        logMixEvent = LogMixEvent(logMix[0],logMix[1], logMix[2], logMix[3])
+        logMixEvent = LogMixEvent(logMix[0],logMix[1], logMix[2], logMix[3], logMix[4])
         mix_result = _event_args_to_mix_result(logMixEvent)
+        mid = mix_result.mid
+        # load merkletree from database
+        merkle_tree = sqlMerkleTree.open(int(math.pow(2, ZETH_MERKLE_TREE_DEPTH)), mid)
+        #print("init root: ", merkle_tree.get_root())
+        # check merkel root whether is new or not
         new_merkle_root = mix_result.new_merkle_root
-        print("new_merkle_root in log: ", new_merkle_root)
-        for wallet in make_wallet():
-            # check merkel root
-            if new_merkle_root==wallet.merkle_tree.get_root():
-                return
+        print("new_merkle_roots in log: ", new_merkle_root)
+        if new_merkle_root == merkle_tree.get_root():
+            return
+
+        # get the next_address of updated tree
+        next_addr = merkle_tree.get_num_entries()
+
+        # update each merkletree
+        for out_ev in mix_result.output_events:
+            print("commitment: ", out_ev.commitment)
+            merkle_tree.insert(out_ev.commitment)
+        merkle_tree.recompute_root()
+        merkle_tree.save(blockNumber,mid)
+        print(f"The update_merkle_root of {mid} is {merkle_tree.get_root()}")
+
+        # update each user's wallet
+        for wallet in make_wallet(mid, next_addr):
             # received_notes
-            wallet.blockNumber = blockNumber
-            print("blockNumber:", blockNumber)
             wallet.receive_notes(mix_result.output_events)
             spent_commits = wallet.mark_nullifiers_used(mix_result.nullifiers)
             for commit in spent_commits:
                 print(f"{wallet.username} spent commits:  {commit}")
             wallet.update_and_save_state()
-            update_merkle_root = wallet.merkle_tree.get_root()
-            print(f"The update_merkle_root in wallet of {wallet.username} is {update_merkle_root}")
 
 
 @command()
@@ -127,11 +146,12 @@ def event_sync(mixer_addr: str):
         eventcallback = EventCallbackImpl()
         eventcallback.abiparser = abiparser
         blockNumber = 0
+        # maybe change to use cursor.lastrowid to get the last row
         sqlSearch = "select * from merkletree"
         cursor.execute(sqlSearch)
         results = cursor.fetchall()
         if results:
-            blockNumber = results[0][2]
+            blockNumber = results[-1][2]
         print("blockNumber: ", blockNumber)
         result = bcos_event.register_eventlog_filter(
             eventcallback, abiparser, [mixer_addr], "LogMix", indexed_value, str(blockNumber+1))
@@ -148,12 +168,10 @@ def event_sync(mixer_addr: str):
         print("Exception!")
         import traceback
         traceback.print_exc()
-        db.close()
     finally:
         print("event callback finished!")
         if bcos_event.client is not None:
             bcos_event.client.finish()
-            db.close()
     sys.exit(-1)
 
 

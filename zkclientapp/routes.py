@@ -6,16 +6,17 @@ from commands.zeth_token_approve import token_approve
 from commands.zeth_token_deploy import  deploy_asset
 from commands.zeth_deploy import deploy
 from commands.zeth_mix import mix
-from commands.zeth_ls_commits import ls_commits
+#from commands.zeth_ls_commits import ls_commits
 from commands.zeth_ls_notes import ls_notes
 from commands.zeth_deploy import deploy
-from commands.utils import load_zeth_address, load_zeth_address_secret, open_wallet, parse_output
+from commands.utils import load_zeth_address, load_zeth_address_secret, open_wallet, parse_output, load_zeth_address_public
 from contract.BAC001 import BAC001
 from python_web3.client.bcoskeypair import BcosKeyPair
 from zeth.utils import EtherValue, from_zeth_units
 from python_web3.eth_account.account import Account
 from commands.constants import USER_DIR, FISCO_ADDRESS_FILE, WALLET_DIR_DEFAULT, ADDRESS_FILE_DEFAULT
 from django.shortcuts import render
+from api.zeth_messages_pb2 import ZethNote
 import json
 import time
 from django.http import JsonResponse
@@ -33,13 +34,33 @@ including Fisco account (saved as keystore) and zbac account (saved as publickey
 Note that different wallet must have different zbac account but any of them are allowed to have same Fisco
 account.
 '''
-
+def checkUser(request) ->None:
+	result = {}
+	req = json.loads(request.body)
+	keystore_file = "{}/{}/{}".format(USER_DIR, req['username'], FISCO_ADDRESS_FILE)
+	if exists(keystore_file):
+		with open(keystore_file, "r") as dump_f:
+			keytext = json.load(dump_f)
+			privatekey = Account.decrypt(keytext, req['password'])
+			if privatekey:
+				result['status'] = 0
+				prikey = ''.join(['%02X' % b for b in privatekey])
+				result['privatekey'] = "0x" + prikey.lower()
+				return JsonResponse(result)
+			else:
+				result['status'] = 1
+				result['text'] = 'password not true'
+				return JsonResponse(result)
+	else:
+		result['status'] = 1
+		result['text'] = 'your account is not recorded in server, please import it firstly or create a new one'
+		return JsonResponse(result)
 '''
 make wallet by generate a new Fisco account for user with username and password
 params:
 username:str 
 password:str 
-'''
+
 def genFiscoAddr(request) -> None:
 	result = {}
 	req = json.loads(request.body)
@@ -56,7 +77,30 @@ def genFiscoAddr(request) -> None:
 	prikey = ''.join(['%02X' % b for b in privatekey])
 	result['privatekey'] = "0x" + prikey.lower()
 	return JsonResponse(result)
-
+'''
+def genAccount(request) -> None:
+	result = {}
+	req = json.loads(request.body)
+	keystore_file = "{}/{}/{}".format(USER_DIR, req['username'], FISCO_ADDRESS_FILE)
+	if exists(keystore_file):
+		result['status'] = 1
+		result['text'] = 'username existed'
+		return JsonResponse(result)
+	addr_file = "{}/{}/{}".format(USER_DIR, req['username'], ADDRESS_FILE_DEFAULT)
+	if exists(addr_file):
+		result['status'] = 1
+		result['text'] = 'account existed'
+		return JsonResponse(result)
+	(address, publickey, privatekey) = gen_fisco_address(req['username'], req['password'])
+	zbac_addr = gen_address(req['username'])
+	pubkey = ''.join(['%02X' % b for b in publickey])
+	prikey = ''.join(['%02X' % b for b in privatekey])
+	result['status'] = 0
+	result['fisco_address'] = address
+	result['publickey'] = "0x" + pubkey.lower()
+	result['privatekey'] = "0x" + prikey.lower()
+	result['zbac_address'] = str(zbac_addr)
+	return JsonResponse(result)
 '''
 make wallet by import the Fisco account that the user want to use with privatekey, username and password
 params:
@@ -78,13 +122,21 @@ def importFiscoAddr(request) -> None:
 	keytext = Account.encrypt(account.privateKey, req['password'])
 	with open(keystore_file, "w") as dump_f:
 		json.dump(keytext, dump_f)
+	addr_file = "{}/{}/{}".format(USER_DIR, req['username'], ADDRESS_FILE_DEFAULT)
+	zbac_addr = ''
+	if not exists(addr_file):
+		zbac_addr = zbac_addr + str(gen_address(req['username']))
+	else:
+		zbac_addr = zbac_addr + str(load_zeth_address_public(req['username']))
+	result['status'] = 0
 	print(f"{req['username']}'s address: {account.address}")
 	print(f"{req['username']}'s publickey: {account.publickey}")
 	print(f"fisco account keypair written to {keystore_file}")
 	result['status'] = 0
-	result['address'] = account.address
+	result['fisco_address'] = account.address
 	pubkey = ''.join(['%02X' % b for b in account.publickey])
 	result['publickey'] = "0x" + pubkey.lower()
+	result['zbac_address'] = zbac_addr
 	return JsonResponse(result)
     
 
@@ -261,11 +313,14 @@ def mixBac(request) -> None:
 	addr_file = "{}/{}/{}".format(USER_DIR, req['username'], ADDRESS_FILE_DEFAULT)
 	if exists(keystore_file) and exists(addr_file):
 		js_secret = load_zeth_address_secret(req['username'])
-		wallet = open_wallet(None, js_secret, req['username'])
+		wallet = open_wallet(None, js_secret, req['username'], None, None)
 		inputs: List[Tuple[int, ZethNote]] = [
 			wallet.find_note(note_id).as_input() for note_id in req['input_notes']]
 		outputs: List[Tuple[ZethAddressPub, EtherValue]] = [
 			parse_output(out_spec) for out_spec in req['output_specs']]
+		mids = []
+		for note_id in req['input_notes']:
+			mids.append(wallet.find_note(note_id).mid)
 		'''
 		todo: check the reciever zeth_address whether record in server, if not, return /
 		by searching the address in mysql, so for every zeth account, we need to save their zeth_address in mysql when generating /
@@ -294,7 +349,7 @@ def mixBac(request) -> None:
 				result['status'] = 1
 				result['text'] = 'token approve failed'
 				return JsonResponse(result)
-		outputmix = mix(req['mixer_address'], req['username'], req['password'], vin_pub, vout_pub, inputs, outputs)
+		outputmix = mix(req['mixer_address'], req['username'], req['password'], vin_pub, vout_pub, inputs, outputs, mids)
 		if outputmix:
 			'''
 			event_sync(req['mixer_address'],sqlResult.blockNumber)
@@ -338,9 +393,10 @@ def getNotes(request) -> None:
 		with open(keystore_file, "r") as dump_f:
 			keytext = json.load(dump_f)
 			if Account.decrypt(keytext, req['password']):
-				(total, commits, spend_commits) = ls_notes(req['username'])
+				(total, commits, values, spend_commits) = ls_notes(req['username'])
 				result['status'] = 0
 				result['commits'] = commits
+				result['values'] = values
 				result['total_value'] = total.ether()
 				result['spend_commits'] = spend_commits
 				return JsonResponse(result)
@@ -356,6 +412,7 @@ def getNotes(request) -> None:
 get all commiments in merkletree
 params:
 username:str
+'''
 '''
 def getCommits(request) -> None:
 	result = {}
@@ -376,3 +433,4 @@ def getCommits(request) -> None:
 	result['status'] = 1
 	result['text'] = 'your account is not recorded in server, please import it firstly or create a new one'
 	return JsonResponse(result)
+'''

@@ -225,7 +225,7 @@ def get_dummy_input_and_address(
 
 
 def compute_joinsplit2x2_inputs(
-        mk_root: bytes,
+        mk_roots: List[bytes],
         input0: Tuple[int, ZethNote],
         mk_path0: List[str],
         input1: Tuple[int, ZethNote],
@@ -271,9 +271,11 @@ def compute_joinsplit2x2_inputs(
         output_note0,
         output_note1
     ]
-
+    merkle_roots = []
+    for mk_root in mk_roots:
+        merkle_roots.append(mk_root.hex())
     return ProofInputs(
-        mk_root=mk_root.hex(),
+        mk_roots=merkle_roots,
         js_inputs=js_inputs,
         js_outputs=js_outputs,
         pub_in_value=int64_to_hex(public_in_value_zeth_units),
@@ -357,7 +359,7 @@ class MixerClient:
     '''
     def deposit(
             self,
-            mk_tree: MerkleTree,
+            mk_trees: List[MerkleTree],
             zeth_address: ZethAddress,
             sender_eth_address: str,
             eth_amount: EtherValue,
@@ -367,7 +369,7 @@ class MixerClient:
         if not outputs or len(outputs) == 0:
             outputs = [(zeth_address.addr_pk, eth_amount)]
         return self.joinsplit(
-            mk_tree,
+            mk_trees,
             sender_ownership_keypair=zeth_address.ownership_keypair(),
             sender_eth_address=sender_eth_address,
             inputs=[],
@@ -378,7 +380,7 @@ class MixerClient:
 
     def joinsplit(
             self,
-            mk_tree: MerkleTree,
+            mk_trees: List[MerkleTree],
             sender_ownership_keypair: OwnershipKeyPair,
             sender_eth_address: str,
             inputs: List[Tuple[int, ZethNote]],
@@ -388,7 +390,7 @@ class MixerClient:
             tx_value: Optional[EtherValue] = None,
             compute_h_sig_cb: Optional[ComputeHSigCB] = None) -> str:
         mix_params = self.create_mix_parameters(
-            mk_tree,
+            mk_trees,
             sender_ownership_keypair,
             sender_eth_address,
             inputs,
@@ -408,7 +410,7 @@ class MixerClient:
 
     def create_mix_parameters_keep_signing_key(
             self,
-            mk_tree: MerkleTree,
+            mk_trees: List[MerkleTree],
             sender_ownership_keypair: OwnershipKeyPair,
             sender_eth_address: str,
             inputs: List[Tuple[int, ZethNote]],
@@ -426,8 +428,14 @@ class MixerClient:
             inputs + \
             [get_dummy_input_and_address(sender_a_pk)
              for _ in range(constants.JS_INPUTS - len(inputs))]
-        mk_root = mk_tree.get_root()
-        mk_paths = [compute_merkle_path(addr, mk_tree) for addr, _ in inputs]
+        mk_roots = []
+        mk_paths = []
+        for mk_tree in mk_trees:
+            mk_roots.append(mk_tree.get_root())
+        print("merkle_roots: ", mk_roots)
+        mk_paths.append(compute_merkle_path(inputs[0][0], mk_trees[0]))
+        mk_paths.append(compute_merkle_path(inputs[1][0], mk_trees[1]))
+        #mk_paths = [compute_merkle_path(addr, mk_tree) for addr, _ in inputs]
 
         # Generate output notes and proof.  Dummy outputs are constructed with
         # value 0 to an invalid ZethAddressPub, formed from the senders
@@ -447,7 +455,7 @@ class MixerClient:
 
         (output_note1, output_note2, proof_json, signing_keypair) = \
             self.get_proof_joinsplit_2_by_2(
-                mk_root,
+                mk_roots,
                 inputs[0],
                 mk_paths[0],
                 inputs[1],
@@ -485,7 +493,7 @@ class MixerClient:
 
     def create_mix_parameters(
             self,
-            mk_tree: MerkleTree,
+            mk_trees: List[MerkleTree],
             sender_ownership_keypair: OwnershipKeyPair,
             sender_eth_address: str,
             inputs: List[Tuple[int, ZethNote]],
@@ -495,7 +503,7 @@ class MixerClient:
             compute_h_sig_cb: Optional[ComputeHSigCB] = None
     ) -> contracts.MixParameters:
         mix_params, _sig_keypair = self.create_mix_parameters_keep_signing_key(
-            mk_tree,
+            mk_trees,
             sender_ownership_keypair,
             sender_eth_address,
             inputs,
@@ -535,7 +543,7 @@ class MixerClient:
     '''
     def get_proof_joinsplit_2_by_2(
             self,
-            mk_root: bytes,
+            mk_roots: List[bytes],
             input0: Tuple[int, ZethNote],
             mk_path0: List[str],
             input1: Tuple[int, ZethNote],
@@ -553,7 +561,7 @@ class MixerClient:
         """
         signing_keypair = signing.gen_signing_keypair()
         proof_input = compute_joinsplit2x2_inputs(
-            mk_root,
+            mk_roots,
             input0,
             mk_path0,
             input1,
