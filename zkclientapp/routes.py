@@ -1,30 +1,26 @@
-from commands.zeth_gen_fisco_address import gen_fisco_address
-from commands.zeth_gen_address import gen_address
-#from commands.event_sync import event_sync
-from commands.zeth_deposit import deposit
-from commands.zeth_token_approve import token_approve
-from commands.zeth_token_deploy import  deploy_asset
-from commands.zeth_deploy import deploy
-from commands.zeth_mix import mix
-from commands.zeth_ls_commits import ls_commits
-from commands.zeth_ls_notes import ls_notes
-from commands.zeth_deploy import deploy
-from commands.utils import load_zeth_address, load_zeth_address_secret, open_wallet, parse_output, load_zeth_address_public
-from contract.BAC001 import BAC001
-from python_web3.client.bcoskeypair import BcosKeyPair
-from zeth.utils import EtherValue, from_zeth_units
-from python_web3.eth_account.account import Account
-from commands.constants import USER_DIR, FISCO_ADDRESS_FILE, WALLET_DIR_DEFAULT, ADDRESS_FILE_DEFAULT
-from django.shortcuts import render
 import json
-import time
-from django.http import JsonResponse
 from os.path import exists
 from typing import List, Tuple
 
+from django.http import JsonResponse
+
+from commands.constants import USER_DIR, FISCO_ADDRESS_FILE, WALLET_DIR_DEFAULT, ADDRESS_FILE_DEFAULT
+from commands.utils import load_zeth_address, load_zeth_address_secret, open_wallet, parse_output, \
+	load_zeth_address_public
+from commands.zeth_deploy import deploy
+from commands.zeth_deposit import deposit
+from commands.zeth_gen_address import gen_address
+from commands.zeth_gen_fisco_address import gen_fisco_address
+from commands.zeth_ls_commits import ls_commits
+from commands.zeth_ls_notes import ls_notes
+from commands.zeth_mix import mix
+from commands.zeth_token_approve import token_approve
+from commands.zeth_token_deploy import deploy_asset
+from contract.BAC001 import BAC001
+from python_web3.client.bcoskeypair import BcosKeyPair
+from python_web3.eth_account.account import Account
+from zeth.utils import EtherValue, from_zeth_units
 from zeth.wallet import _ensure_dir
-from . import models
-from .models import merkletree
 
 '''
 The wallet of user is designed as that every wallet need to be specified a username and store the 
