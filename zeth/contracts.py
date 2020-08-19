@@ -84,9 +84,11 @@ class MixResult:
     """
     def __init__(
             self,
+            mid: int,
             new_merkle_root: bytes,
             nullifiers: List[bytes],
             output_events: List[MixOutputEvents]):
+        self.mid = mid
         self.new_merkle_root = new_merkle_root
         self.nullifiers = nullifiers
         self.output_events = output_events
@@ -96,6 +98,7 @@ def _event_args_to_mix_result(event_args: Any) -> MixResult:
     mix_out_args = zip(event_args.commitments, event_args.ciphertexts)
     out_events = [MixOutputEvents(c, ciph) for (c, ciph) in mix_out_args]
     return MixResult(
+        mid = event_args.mid,
         new_merkle_root=event_args.root,
         nullifiers=event_args.nullifiers,
         output_events=out_events)
@@ -180,12 +183,10 @@ class InstanceDescription:
         Return the instantiated contract
         """
         return web3.eth.contract(address=self.address, abi=self.abi)
-'''
 
 def get_block_number(web3: Any) -> int:
     return web3.eth.blockNumber
 
-'''
 def install_sol() -> None:
     solcx.install_solc(SOL_COMPILER_VERSION)
 

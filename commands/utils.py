@@ -165,13 +165,15 @@ def load_zeth_address(username: str) -> ZethAddress:
 def open_wallet(
         mixer_instance: Any,
         js_secret: ZethAddressPriv,
-        username: str
+        username: str,
+        mids: List[int],
+        next_addrs: List[int]
         ) -> Wallet:
     """
     Load a wallet using a secret key.
     """
     wallet_dir = "{}/{}/{}".format(USER_DIR, username, WALLET_DIR_DEFAULT)
-    return Wallet(mixer_instance, username, wallet_dir, js_secret)
+    return Wallet(mixer_instance, username, wallet_dir, js_secret, mids, next_addrs)
 
 
 def do_sync(

@@ -18,7 +18,7 @@ def ls_notes(username: str):
     #mixer_instance = mixer_desc.mixer.instantiate(web3)
     #mixer_instance = Groth16Mixer(mixer_addr)
     js_secret = load_zeth_address_secret(username)
-    wallet = open_wallet(None, js_secret, username)
+    wallet = open_wallet(None, js_secret, username,None, None)
 
     total = EtherValue(0)
     commits = []
