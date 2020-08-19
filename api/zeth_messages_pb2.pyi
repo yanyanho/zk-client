@@ -84,7 +84,7 @@ class JoinsplitInput(google___protobuf___message___Message):
 
 class ProofInputs(google___protobuf___message___Message):
     DESCRIPTOR: google___protobuf___descriptor___Descriptor = ...
-    mk_root = ... # type: typing___Text
+    mk_roots = ... # type: google___protobuf___internal___containers___RepeatedScalarFieldContainer[typing___Text]
     pub_in_value = ... # type: typing___Text
     pub_out_value = ... # type: typing___Text
     h_sig = ... # type: typing___Text
@@ -98,7 +98,7 @@ class ProofInputs(google___protobuf___message___Message):
 
     def __init__(self,
         *,
-        mk_root : typing___Optional[typing___Text] = None,
+        mk_roots : typing___Optional[typing___Iterable[typing___Text]] = None,
         js_inputs : typing___Optional[typing___Iterable[JoinsplitInput]] = None,
         js_outputs : typing___Optional[typing___Iterable[ZethNote]] = None,
         pub_in_value : typing___Optional[typing___Text] = None,
@@ -111,6 +111,6 @@ class ProofInputs(google___protobuf___message___Message):
     def MergeFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
     def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
     if sys.version_info >= (3,):
-        def ClearField(self, field_name: typing_extensions___Literal[u"h_sig",u"js_inputs",u"js_outputs",u"mk_root",u"phi",u"pub_in_value",u"pub_out_value"]) -> None: ...
+        def ClearField(self, field_name: typing_extensions___Literal[u"h_sig",u"js_inputs",u"js_outputs",u"mk_roots",u"phi",u"pub_in_value",u"pub_out_value"]) -> None: ...
     else:
-        def ClearField(self, field_name: typing_extensions___Literal[u"h_sig",b"h_sig",u"js_inputs",b"js_inputs",u"js_outputs",b"js_outputs",u"mk_root",b"mk_root",u"phi",b"phi",u"pub_in_value",b"pub_in_value",u"pub_out_value",b"pub_out_value"]) -> None: ...
+        def ClearField(self, field_name: typing_extensions___Literal[u"h_sig",b"h_sig",u"js_inputs",b"js_inputs",u"js_outputs",b"js_outputs",u"mk_roots",b"mk_roots",u"phi",b"phi",u"pub_in_value",b"pub_in_value",u"pub_out_value",b"pub_out_value"]) -> None: ...

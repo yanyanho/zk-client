@@ -97,7 +97,7 @@ NOTE_LENGTH_BYTES: int = bit_length_to_byte_length(NOTE_LENGTH)
 #   [2 + jsOut + 2*jsIn] - 1     x residual bits, v_in, v_out
 
 # Index (in public inputs) of residual bits
-RESIDUAL_BITS_INDEX: int = (2 * JS_INPUTS) + JS_OUTPUTS + 2
+RESIDUAL_BITS_INDEX: int = (2 * JS_INPUTS) + JS_OUTPUTS + 3
 
 # Number of full-length digests to be encoded in public inputs
 NUM_INPUT_DIGESTS: int = (2 * JS_INPUTS) + 1

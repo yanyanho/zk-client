@@ -3,7 +3,7 @@ from os.path import exists
 from typing import List, Tuple
 
 from django.http import JsonResponse
-
+from api.zeth_messages_pb2 import ZethNote
 from commands.constants import USER_DIR, FISCO_ADDRESS_FILE, WALLET_DIR_DEFAULT, ADDRESS_FILE_DEFAULT
 from commands.utils import load_zeth_address, load_zeth_address_secret, open_wallet, parse_output, \
 	load_zeth_address_public
@@ -11,7 +11,6 @@ from commands.zeth_deploy import deploy
 from commands.zeth_deposit import deposit
 from commands.zeth_gen_address import gen_address
 from commands.zeth_gen_fisco_address import gen_fisco_address
-from commands.zeth_ls_commits import ls_commits
 from commands.zeth_ls_notes import ls_notes
 from commands.zeth_mix import mix
 from commands.zeth_token_approve import token_approve
@@ -21,6 +20,7 @@ from python_web3.client.bcoskeypair import BcosKeyPair
 from python_web3.eth_account.account import Account
 from zeth.utils import EtherValue, from_zeth_units
 from zeth.wallet import _ensure_dir
+from zeth.zeth_address import ZethAddressPub
 
 '''
 The wallet of user is designed as that every wallet need to be specified a username and store the 
@@ -50,33 +50,6 @@ def checkUser(request) ->None:
 		result['status'] = 1
 		result['text'] = 'your account is not recorded in server, please import it firstly or create a new one'
 		return JsonResponse(result)
-
-def genAccount(request) -> None:
-	result = {}
-	req = json.loads(request.body)
-	keystore_file = "{}/{}/{}".format(USER_DIR, req['username'], FISCO_ADDRESS_FILE)
-	if exists(keystore_file):
-		result['status'] = 1
-		result['text'] = 'username existed'
-		return JsonResponse(result)
-	addr_file = "{}/{}/{}".format(USER_DIR, req['username'], ADDRESS_FILE_DEFAULT)
-	if exists(addr_file):
-		result['status'] = 1
-		result['text'] = 'account existed'
-		return JsonResponse(result)
-	(address, publickey, privatekey) = gen_fisco_address(req['username'], req['password'])
-	zbac_addr = gen_address(req['username'])
-	pubkey = ''.join(['%02X' % b for b in publickey])
-	prikey = ''.join(['%02X' % b for b in privatekey])
-	result['status'] = 0
-	result['fisco_address'] = address
-	result['publickey'] = "0x" + pubkey.lower()
-	result['privatekey'] = "0x" + prikey.lower()
-	result['zbac_address'] = str(zbac_addr)
-	return JsonResponse(result)
-
-
-
 '''
 make wallet by generate a new Fisco account for user with username and password
 params:
@@ -100,6 +73,29 @@ def genFiscoAddr(request) -> None:
 	result['privatekey'] = "0x" + prikey.lower()
 	return JsonResponse(result)
 '''
+def genAccount(request) -> None:
+	result = {}
+	req = json.loads(request.body)
+	keystore_file = "{}/{}/{}".format(USER_DIR, req['username'], FISCO_ADDRESS_FILE)
+	if exists(keystore_file):
+		result['status'] = 1
+		result['text'] = 'username existed'
+		return JsonResponse(result)
+	addr_file = "{}/{}/{}".format(USER_DIR, req['username'], ADDRESS_FILE_DEFAULT)
+	if exists(addr_file):
+		result['status'] = 1
+		result['text'] = 'account existed'
+		return JsonResponse(result)
+	(address, publickey, privatekey) = gen_fisco_address(req['username'], req['password'])
+	zbac_addr = gen_address(req['username'])
+	pubkey = ''.join(['%02X' % b for b in publickey])
+	prikey = ''.join(['%02X' % b for b in privatekey])
+	result['status'] = 0
+	result['fisco_address'] = address
+	result['publickey'] = "0x" + pubkey.lower()
+	result['privatekey'] = "0x" + prikey.lower()
+	result['zbac_address'] = str(zbac_addr)
+	return JsonResponse(result)
 '''
 make wallet by import the Fisco account that the user want to use with privatekey, username and password
 params:
@@ -312,11 +308,14 @@ def mixBac(request) -> None:
 	addr_file = "{}/{}/{}".format(USER_DIR, req['username'], ADDRESS_FILE_DEFAULT)
 	if exists(keystore_file) and exists(addr_file):
 		js_secret = load_zeth_address_secret(req['username'])
-		wallet = open_wallet(None, js_secret, req['username'])
+		wallet = open_wallet(None, js_secret, req['username'], None, None)
 		inputs: List[Tuple[int, ZethNote]] = [
 			wallet.find_note(note_id).as_input() for note_id in req['input_notes']]
 		outputs: List[Tuple[ZethAddressPub, EtherValue]] = [
 			parse_output(out_spec) for out_spec in req['output_specs']]
+		mids = []
+		for note_id in req['input_notes']:
+			mids.append(wallet.find_note(note_id).mid)
 		'''
 		todo: check the reciever zeth_address whether record in server, if not, return /
 		by searching the address in mysql, so for every zeth account, we need to save their zeth_address in mysql when generating /
@@ -345,7 +344,7 @@ def mixBac(request) -> None:
 				result['status'] = 1
 				result['text'] = 'token approve failed'
 				return JsonResponse(result)
-		outputmix = mix(req['mixer_address'], req['username'], req['password'], vin_pub, vout_pub, inputs, outputs)
+		outputmix = mix(req['mixer_address'], req['username'], req['password'], vin_pub, vout_pub, inputs, outputs, mids)
 		if outputmix:
 			'''
 			event_sync(req['mixer_address'],sqlResult.blockNumber)
@@ -409,6 +408,7 @@ get all commiments in merkletree
 params:
 username:str
 '''
+'''
 def getCommits(request) -> None:
 	result = {}
 	#req = json.loads(request.body)
@@ -428,3 +428,4 @@ def getCommits(request) -> None:
 	result['status'] = 1
 	result['text'] = 'your account is not recorded in server, please import it firstly or create a new one'
 	return JsonResponse(result)
+'''

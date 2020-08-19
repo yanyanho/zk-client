@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: LGPL-3.0+
 
 from commands.utils import create_zeth_client_and_mixer_desc, \
-    load_zeth_address, open_wallet, parse_output, do_sync
+    load_zeth_address, parse_output, do_sync
 from zeth.constants import JS_INPUTS, JS_OUTPUTS
 from commands.constants import PROVER_SERVER_ENDPOINT_DEFAULT
 from zeth.mixer_client import ZethAddressPub
@@ -13,6 +13,9 @@ from click import command, option, pass_context, ClickException, Context
 from typing import List, Tuple, Optional
 from contract.Groth16Mixer import Groth16Mixer
 from python_web3.eth_account.account import Account
+from zeth.merkle_tree import sqlMerkleTree
+from zeth.constants import ZETH_MERKLE_TREE_DEPTH
+import math
 
 def mix(
         mixer_addr: str,
@@ -21,7 +24,8 @@ def mix(
         vin_pub: EtherValue,
         vout_pub: EtherValue,
         inputs: List[Tuple[int, ZethNote]],
-        outputs: List[Tuple[ZethAddressPub, EtherValue]]
+        outputs: List[Tuple[ZethAddressPub, EtherValue]],
+        mids: List[int]
         ) :
     """
     Generic mix function
@@ -34,18 +38,24 @@ def mix(
     zeth_client = create_zeth_client_and_mixer_desc(PROVER_SERVER_ENDPOINT_DEFAULT, mixer_addr, username, password)
 
     zeth_address = load_zeth_address(username)
+    '''
     wallet = open_wallet(
         zeth_client.mixer_instance, zeth_address.addr_sk, username)
-
+    '''
     #eth_address = load_eth_address(eth_addr)
     fisco_bcos_address = zeth_client.mixer_instance.client.ecdsa_account.address
     # If instance uses an ERC20 token, tx_value can be 0 not default vin_pub.
     tx_value: Optional[EtherValue] = EtherValue(0)
     #if mixer_desc.token:
     #    tx_value = EtherValue(0)
-
+    if len(mids) < JS_INPUTS:
+        mids.append(0)
+    print("mids: ", mids)
+    merkle_trees = []
+    for mid in mids:
+        merkle_trees.append(sqlMerkleTree.open(int(math.pow(2, ZETH_MERKLE_TREE_DEPTH)), mid))
     (outputresult, receipt) = zeth_client.joinsplit(
-        wallet.merkle_tree,
+        merkle_trees,
         zeth_address.ownership_keypair(),
         fisco_bcos_address,
         inputs,

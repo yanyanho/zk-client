@@ -245,11 +245,12 @@ class sqlMerkleTree(MerkleTree):
             self, tree_data: MerkleTreeData, depth: int):
         MerkleTree.__init__(self, tree_data, depth)
 
-    def open(max_num_leaves: int) -> sqlMerkleTree:
+    def open(max_num_leaves: int, mid: int) -> sqlMerkleTree:
         depth = int(math.log(max_num_leaves, 2))
-        sqlSearch = "select * from merkletree"
-        cursor.execute(sqlSearch)
+        sqlSearch = "select * from merkletree where MID=%s"
+        cursor.execute(sqlSearch, [mid])
         results = cursor.fetchall()
+        db.commit()
         if not results:
             tree_data = MerkleTreeData.empty_with_depth(depth)
         else:
@@ -260,19 +261,22 @@ class sqlMerkleTree(MerkleTree):
             assert depth == tree_data.depth
         return sqlMerkleTree(tree_data, depth)
 
-    def save(self, blockNumber : int) -> None:
-        sqlSearch = "select * from merkletree"
-        cursor.execute(sqlSearch)
+    def save(self, blockNumber: int, mid: int) -> None:
+        sqlSearch = "select * from merkletree where MID=%s"
+        cursor.execute(sqlSearch, [mid])
         results = cursor.fetchall()
         if not results:
             json_str = json.dumps(self.tree_data.to_json_dict())
             print("json_str: ", json_str)
             print("blockNumber: ", blockNumber)
-            sqlInsert = "insert into merkletree (tree_data, blockNumber) values (%s, %s);"
-            cursor.execute(sqlInsert, [json_str, blockNumber])
+            sqlInsert = "insert into merkletree (MID, tree_data, blockNumber) values (%s, %s, %s);"
+            cursor.execute(sqlInsert, [mid, json_str, blockNumber])
             db.commit()
+            # make sure the inserting row's MID == mid
+            sqlSearch = "select * from merkletree where MID=%s"
+            cursor.execute(sqlSearch, [mid])
+            assert cursor.fetchall()
         else:
-            result = results[0]
             json_str = json.dumps(self.tree_data.to_json_dict())
             #json_str = pymysql.escape_string(json_str)
             #print("json_str: ", json_str)
@@ -285,7 +289,7 @@ class sqlMerkleTree(MerkleTree):
             '''
             sqlUpdate = "update merkletree set tree_data=%s, blockNumber=%s where MID=%s;"
             #print("sqlUpdate: ", sqlUpdate)
-            cursor.execute(sqlUpdate, [json_str, blockNumber, result[0]])
+            cursor.execute(sqlUpdate, [json_str, blockNumber, mid])
             db.commit()
 
 

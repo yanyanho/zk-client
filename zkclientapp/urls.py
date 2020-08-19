@@ -25,7 +25,7 @@ urlpatterns = [
     url(r'^mixBac$', routes.mixBac),
     url(r'^sendAsset$', routes.sendAsset),
     url(r'^getNotes$', routes.getNotes),
-    url(r'^getCommits$', routes.getCommits),
+    #url(r'^getCommits$', routes.getCommits),
     url(r'^checkUser$', routes.checkUser),
     url(r'^genAccount$', routes.genAccount),
 ]
