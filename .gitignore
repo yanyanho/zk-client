@@ -20,3 +20,4 @@ user
 zkclient/settings.py
 *.keystore
 env/src
+vk.json
