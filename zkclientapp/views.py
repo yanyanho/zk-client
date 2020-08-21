@@ -1,9 +1,9 @@
-import threading
-
 from django.shortcuts import render
 from commands.constants import DATABASE_DEFAULT_ADDRESS, DATABASE_DEFAULT_PORT, DATABASE_DEFAULT_USER, DATABASE_DEFAULT_PASSWORD, DATABASE_DEFAULT_DATABASE
 from commands.zeth_token_deploy import  deploy_asset
 from commands.zeth_deploy import deploy
+from commands.event_sync import event_sync
+import threading
 import pymysql
 import re
 BACTYPE = "bac"
@@ -18,7 +18,7 @@ db = pymysql.connect(
     )
 cursor = db.cursor()
 # Create your views here.
-ownerAddr = "0xf1585b8d0e08a0a00fff662e24d67ba95a438256"
+ownerAddr = "0x598cf8fba4dcc36417f4c11497dee7eb23fb1431"
 '''
 def create_table():
     print("check whether existed tables")
@@ -99,3 +99,14 @@ def deploy_contract():
 #create_table()
 
 deploy_contract()
+
+class TaskThread(threading.Thread):
+    def run(self):
+        event_sync()
+
+def eventSyncTask():
+    taskThread = TaskThread()
+    print("sync the event in new thread")
+    taskThread.start()
+
+eventSyncTask()
