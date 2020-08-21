@@ -16,7 +16,6 @@
 **/*.log
 _test_notes
 **/logs
-user
 zkclient/settings.py
 *.keystore
 env/src
