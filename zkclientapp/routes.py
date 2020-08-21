@@ -16,7 +16,7 @@ from zeth.utils import EtherValue, from_zeth_units
 from python_web3.eth_account.account import Account
 from commands.constants import USER_DIR, FISCO_ADDRESS_FILE, WALLET_DIR_DEFAULT, ADDRESS_FILE_DEFAULT
 from commands.constants import DATABASE_DEFAULT_ADDRESS, DATABASE_DEFAULT_PORT, DATABASE_DEFAULT_USER, DATABASE_DEFAULT_PASSWORD, DATABASE_DEFAULT_DATABASE
-
+from python_web3.client.bcosclient import BcosClient
 from django.shortcuts import render
 from api.zeth_messages_pb2 import ZethNote
 import json
@@ -320,9 +320,8 @@ def depositBac(request) -> None:
 				'''
 				traType = "deposit"
 				output_specstr = output_specs[0] + ';' + output_specs[1]
-				timestr = time.strftime('%Y-%m-%d %H:%M:%S')
-				sqlInsert = "insert into transactions (traType, username, vin, vout, output_specs, time) values (%s, %s, %s, %s, %s, %s);"
-				cursor.execute(sqlInsert, [traType, req['username'], req['token_amount'], 0, output_specstr, timestr])
+				sqlInsert = "insert into transactions (traType, username, vin, vout, output_specs) values (%s, %s, %s, %s, %s);"
+				cursor.execute(sqlInsert, [traType, req['username'], req['token_amount'], 0, output_specstr])
 				db.commit()
 				result['status'] = 0
 				result['text'] = 'deposit success'
@@ -412,15 +411,14 @@ def mixBac(request) -> None:
 			result['total_value'] = total.ether()
 			'''
 			traType = "mix"
-			timestr = time.strftime('%Y-%m-%d %H:%M:%S')
 			inputstr = ""
 			for note_id in req['input_notes']:
 				inputstr = inputstr + note_id + ';'
 			outputstr = ""
 			for out_spec in req['output_specs']:
 				outputstr = outputstr + out_spec + ';'
-			sqlInsert = "insert into transactions (traType, username, vin, vout, input_notes, output_specs, time) values (%s, %s, %s, %s, %s, %s, %s);"
-			cursor.execute(sqlInsert, [traType, req['username'], req['vin'], req['vout'], inputstr, outputstr, timestr])
+			sqlInsert = "insert into transactions (traType, username, vin, vout, input_notes, output_specs) values (%s, %s, %s, %s, %s, %s);"
+			cursor.execute(sqlInsert, [traType, req['username'], req['vin'], req['vout'], inputstr, outputstr])
 			db.commit()
 			result['status'] = 0
 			result['text'] = 'mix success'
