@@ -5,8 +5,6 @@ setup:
 	pip install --upgrade pip --progress-bar off
 	pip install -e . --progress-bar off
 	$(MAKE) grpc
-	python -c "from zeth.contracts import install_sol; \
-		install_sol()"
 
 check: syntax test
 

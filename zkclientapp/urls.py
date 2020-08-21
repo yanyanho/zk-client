@@ -9,14 +9,6 @@ from . import routes
  
 
 urlpatterns = [
-
-    #主页
-
-    # url(r'^$',views.index,name='index'),
-    # url(r'^get\.html$', views.get_html),
-    # url(r'^get$', views.get),
-    # url(r'^post\.html$', views.post_html),
-    # url(r'^post$', views.post),
     #url(r'^genFiscoAddr$', routes.genFiscoAddr),
     url(r'^genZbacAddr$', routes.genZbacAddr),
     url(r'^deployToken$', routes.deployToken),
@@ -29,4 +21,10 @@ urlpatterns = [
     #url(r'^getCommits$', routes.getCommits),
     url(r'^checkUser$', routes.checkUser),
     url(r'^genAccount$', routes.genAccount),
+    #url(r'^getBacContract$', routes.getBacContract),
+    #url(r'^getMixerContract$', routes.getMixerContract),
+    url(r'^getTransactions$', routes.getTransactions),
+    url(r'^getContract$', routes.getContract),
+    url(r'^getBalance$', routes.getBalance),
+    url(r'^faucet$', routes.faucet),
 ]

@@ -4,7 +4,7 @@ import time
 from typing import List
 
 import pymysql
-from click import command, option, argument
+
 
 from commands.constants import USER_DIR, WALLET_DIR_DEFAULT, \
     DATABASE_DEFAULT_ADDRESS, DATABASE_DEFAULT_PORT, DATABASE_DEFAULT_USER, DATABASE_DEFAULT_PASSWORD, \
@@ -125,12 +125,27 @@ class EventCallbackImpl(EventCallbackHandler):
             wallet.update_and_save_state()
 
 
-@command()
-@argument("mixer_addr")
-def event_sync(mixer_addr: str):
+
+def event_sync():
 
     indexed_value = None
     try:
+        tag = True
+        print("check whether existed mixer contract")
+        sqlSearchMixer = "select * from contract where conType = %s"
+        MIXERTYPE = "mixer"
+        mixer_addr = ""
+        while tag:
+            cursor.execute(sqlSearchMixer, [MIXERTYPE])
+            resultMixer = cursor.fetchall()
+            db.commit()
+            if resultMixer:
+                tag = False
+                mixer_addr = resultMixer[0][2]
+                print("found mixer contract: ", mixer_addr)
+            else:
+                print("could not find mixer contract, waiting...")
+                time.sleep(10)
         bcos_event = BcosEventCallback()
         bcos_event.setclient(BcosClient())
         print(bcos_event.client.getinfo())

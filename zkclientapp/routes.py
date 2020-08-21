@@ -18,9 +18,31 @@ from commands.zeth_token_deploy import deploy_asset
 from contract.BAC001 import BAC001
 from python_web3.client.bcoskeypair import BcosKeyPair
 from python_web3.eth_account.account import Account
-from zeth.utils import EtherValue, from_zeth_units
+
+from commands.constants import USER_DIR, FISCO_ADDRESS_FILE, WALLET_DIR_DEFAULT, ADDRESS_FILE_DEFAULT
+from commands.constants import DATABASE_DEFAULT_ADDRESS, DATABASE_DEFAULT_PORT, DATABASE_DEFAULT_USER, DATABASE_DEFAULT_PASSWORD, DATABASE_DEFAULT_DATABASE
+from python_web3.client.bcosclient import BcosClient
+from django.shortcuts import render
+from api.zeth_messages_pb2 import ZethNote
+import json
+import time
+from django.http import JsonResponse
+from os.path import exists
+from typing import List, Tuple
+
 from zeth.wallet import _ensure_dir
-from zeth.zeth_address import ZethAddressPub
+from . import models
+from .models import merkletree
+import pymysql
+db = pymysql.connect(
+    host = DATABASE_DEFAULT_ADDRESS,
+    port = DATABASE_DEFAULT_PORT,
+    user = DATABASE_DEFAULT_USER,
+    password = DATABASE_DEFAULT_PASSWORD,
+    database = DATABASE_DEFAULT_DATABASE,
+    charset='utf8'
+    )
+cursor = db.cursor()
 
 '''
 The wallet of user is designed as that every wallet need to be specified a username and store the 
@@ -77,13 +99,16 @@ def genAccount(request) -> None:
 	result = {}
 	req = json.loads(request.body)
 	keystore_file = "{}/{}/{}".format(USER_DIR, req['username'], FISCO_ADDRESS_FILE)
-	if exists(keystore_file):
-		result['status'] = 1
-		result['text'] = 'username existed'
-		return JsonResponse(result)
 	addr_file = "{}/{}/{}".format(USER_DIR, req['username'], ADDRESS_FILE_DEFAULT)
-	if exists(addr_file):
-		result['status'] = 1
+	if exists(keystore_file) and exists(addr_file):
+		with open(keystore_file, "r") as dump_f:
+			keytext = json.load(dump_f)
+			privatekey = Account.decrypt(keytext, req['password'])
+			account = Account.privateKeyToAccount(privatekey)
+			result['fisco_address'] = account.address
+		zbac_addr = load_zeth_address_public(req['username'])
+		result['zbac_address'] = str(zbac_addr)
+		result['status'] = 0
 		result['text'] = 'account existed'
 		return JsonResponse(result)
 	(address, publickey, privatekey) = gen_fisco_address(req['username'], req['password'])
@@ -108,8 +133,16 @@ def importFiscoAddr(request) -> None:
 	req = json.loads(request.body)
 	account = Account.privateKeyToAccount(req['privatekey'])
 	keystore_file = "{}/{}/{}".format(USER_DIR, req['username'], FISCO_ADDRESS_FILE)
+	addr_file = "{}/{}/{}".format(USER_DIR, req['username'], ADDRESS_FILE_DEFAULT)
 	if exists(keystore_file):
-		result['status'] = 1
+		with open(keystore_file, "r") as dump_f:
+			keytext = json.load(dump_f)
+			privatekey = Account.decrypt(keytext, req['password'])
+			account = Account.privateKeyToAccount(privatekey)
+			result['fisco_address'] = account.address
+		zbac_addr = load_zeth_address_public(req['username'])
+		result['zbac_address'] = str(zbac_addr)
+		result['status'] = 0
 		result['text'] = 'keystore existed'
 		return JsonResponse(result)
 	user_dir = "{}/{}/{}".format(USER_DIR, req['username'], WALLET_DIR_DEFAULT)
@@ -117,7 +150,6 @@ def importFiscoAddr(request) -> None:
 	keytext = Account.encrypt(account.privateKey, req['password'])
 	with open(keystore_file, "w") as dump_f:
 		json.dump(keytext, dump_f)
-	addr_file = "{}/{}/{}".format(USER_DIR, req['username'], ADDRESS_FILE_DEFAULT)
 	zbac_addr = ''
 	if not exists(addr_file):
 		zbac_addr = zbac_addr + str(gen_address(req['username']))
@@ -192,7 +224,7 @@ def deployMixer(request) -> None:
 def sendAsset(request) -> None:
 	result = {}
 	req = json.loads(request.body)
-	asset_instance = BAC001(req['assetAddress'])
+	asset_instance = BAC001(req['token_address'])
 	keystore_file = "{}/{}/{}".format(USER_DIR, req['username'], FISCO_ADDRESS_FILE)
 	with open(keystore_file, "r") as dump_f:
 		keytext = json.load(dump_f)
@@ -206,13 +238,35 @@ def sendAsset(request) -> None:
 	print(f"- {req['username']}  the transfer of BAC001asset to the Mixer")
 	value = EtherValue(req['value'])
 	out, transactionReceipt = asset_instance.send(
-		req['toAddress'],
+		req['fiscoAddress'],
 		value.wei,'')
 	print("send tranaction output {}", out)
 	balance = asset_instance.balance(keypair.address)
 	result['status'] = 0
-	result['address'] = balance
+	result['balance'] = balance
 	return JsonResponse(result)
+
+def faucet(request) -> None:
+	print("apply for bac tokens")
+	result = {}
+	req = json.loads(request.body)
+	asset_instance = BAC001(req['token_address'])
+	asset_instance.client = BcosClient()
+	value = EtherValue(req['value'])
+	keystore_file = "{}/{}/{}".format(USER_DIR, req['username'], FISCO_ADDRESS_FILE)
+	with open(keystore_file, "r") as dump_f:
+		keytext = json.load(dump_f)
+		privatekey = Account.decrypt(keytext, req['password'])
+		account = Account.privateKeyToAccount(privatekey)
+		out, transactionReceipt = asset_instance.send(
+			account.address,
+			value.wei,'')
+		balance = asset_instance.balance(account.address)
+		print("get tokens: ", balance)
+		result['status'] = 0
+		result['balance'] = balance
+		return JsonResponse(result)
+
 
 '''
 deposit bac to mixer and get two notes with specified value
@@ -270,6 +324,11 @@ def depositBac(request) -> None:
 				result['commits'] = commits
 				result['total_value'] = total.ether()
 				'''
+				traType = "deposit"
+				output_specstr = output_specs[0] + ';' + output_specs[1]
+				sqlInsert = "insert into transactions (traType, username, vin, vout, output_specs) values (%s, %s, %s, %s, %s);"
+				cursor.execute(sqlInsert, [traType, req['username'], req['token_amount'], 0, output_specstr])
+				db.commit()
 				result['status'] = 0
 				result['text'] = 'deposit success'
 				return JsonResponse(result)
@@ -357,6 +416,16 @@ def mixBac(request) -> None:
 			result['commits'] = commits
 			result['total_value'] = total.ether()
 			'''
+			traType = "mix"
+			inputstr = ""
+			for note_id in req['input_notes']:
+				inputstr = inputstr + note_id + ';'
+			outputstr = ""
+			for out_spec in req['output_specs']:
+				outputstr = outputstr + out_spec + ';'
+			sqlInsert = "insert into transactions (traType, username, vin, vout, input_notes, output_specs) values (%s, %s, %s, %s, %s, %s);"
+			cursor.execute(sqlInsert, [traType, req['username'], req['vin'], req['vout'], inputstr, outputstr])
+			db.commit()
 			result['status'] = 0
 			result['text'] = 'mix success'
 			return JsonResponse(result)
@@ -429,3 +498,88 @@ def getCommits(request) -> None:
 	result['text'] = 'your account is not recorded in server, please import it firstly or create a new one'
 	return JsonResponse(result)
 '''
+def getContract(request) -> None:
+	result = {}
+	sqlSearch = "select * from contract"
+	cursor.execute(sqlSearch)
+	results = cursor.fetchall()
+	db.commit()
+	resultbac = results[0]
+	resultmixer = results[1]
+	bacContract = {
+		"contractName": resultbac[0],
+		"contractType": resultbac[1],
+		"contractAddr": resultbac[2],
+		"ownerAddr": resultbac[3],
+		"totalAmount": resultbac[4],
+		"shortName": resultbac[5],
+	}
+	mixerContract = {
+		"contractName": resultmixer[0],
+		"contractType": resultmixer[1],
+		"contractAddr": resultmixer[2],
+		"ownerAddr": resultmixer[3],
+		"totalAmount": resultmixer[4],
+		"shortName": resultmixer[5],
+	}
+	result['contracts'] = {
+		"bacContract": bacContract,
+		"mixerContract": mixerContract,
+	}
+	result['status'] = 0
+	return JsonResponse(result)
+
+
+def getTransactions(request) -> None:
+	result = {}
+	req = json.loads(request.body)
+	keystore_file = "{}/{}/{}".format(USER_DIR, req['username'], FISCO_ADDRESS_FILE)
+	if exists(keystore_file):
+		with open(keystore_file, "r") as dump_f:
+			keytext = json.load(dump_f)
+			privatekey = Account.decrypt(keytext, req['password'])
+			if privatekey:
+				sqlSearch = "select * from transactions where username = %s"
+				cursor.execute(sqlSearch, [req['username']])
+				results = cursor.fetchall()
+				db.commit()
+				result['transactions'] = []
+				for resultTra in results:
+					transacInfo = {
+						"trasactionType": resultTra[0],
+						"senderName": resultTra[1],
+						"publicInput": resultTra[2],
+						"publicOutput": resultTra[3],
+						"input_notes": resultTra[4],
+						"output_specs": resultTra[5],
+					}
+					result['transactions'].append(transacInfo)
+				result['status'] = 0
+				return JsonResponse(result)
+			else:
+				result['status'] = 1
+				result['text'] = 'password not true'
+				return JsonResponse(result)
+	else:
+		result['status'] = 1
+		result['text'] = 'your account is not recorded in server, please import it firstly or create a new one'
+		return JsonResponse(result)
+
+def getBalance(request) -> None:
+	result = {}
+	req = json.loads(request.body)
+	bac_instance = BAC001(req['token_address'])
+	keystore_file = "{}/{}/{}".format(USER_DIR, req['username'], FISCO_ADDRESS_FILE)
+	with open(keystore_file, "r") as dump_f:
+		keytext = json.load(dump_f)
+		privkey = Account.decrypt(keytext, req['password'])
+		bac_instance.client.ecdsa_account = Account.from_key(privkey)
+		keypair = BcosKeyPair()
+		keypair.private_key = bac_instance.client.ecdsa_account.privateKey
+		keypair.public_key = bac_instance.client.ecdsa_account.publickey
+		keypair.address = bac_instance.client.ecdsa_account.address
+		bac_instance.client.keypair = keypair
+	balance = bac_instance.balance(bac_instance.client.ecdsa_account.address)
+	result['status'] = 0
+	result['balance'] = balance
+	return JsonResponse(result)
