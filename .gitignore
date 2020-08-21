@@ -16,8 +16,8 @@
 **/*.log
 _test_notes
 **/logs
-#user
+user
 zkclient/settings.py
-#*.keystore
+*.keystore
 env/src
 vk.json
