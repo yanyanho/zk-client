@@ -83,13 +83,14 @@ contract BaseMixer is MerkleTreeMiMC7, BAC001Holder {
 
     // The number of public inputs is:
     // - 1 (the root)
+    // - 1 (the root1)
     // - jsIn (the nullifiers)
     // - jsOut (the commitments)   2
     // - 1 (hsig)
     // - JsIn (the message auth. tags)
     // - nb_field_residual (the residual bits not fitting in a single field
     //   element and the in and out public values)
-    uint256 constant nbInputs = 1 + jsOut + nb_hash_digests + nb_field_residual;
+    uint256 constant nbInputs = 1 + 1  + jsOut + nb_hash_digests + nb_field_residual;
 
     // Contract variable that indicates the address of the token contract
     // If token = address(0) then the mixer works with ether
@@ -189,7 +190,7 @@ contract BaseMixer is MerkleTreeMiMC7, BAC001Holder {
         // residual field element after padding. We retrieve the public value
         // in and remove any extra bits (due to the padding)
 
-        uint256 residual_bits = primary_inputs[1 + jsOut + nb_hash_digests];
+        uint256 residual_bits = primary_inputs[2 + jsOut + nb_hash_digests];
         residual_bits = residual_bits >> residual_hash_bits;
         vpub_out = uint256(uint64(residual_bits)) * public_unit_value_wei;
         vpub_in = uint256(uint64(residual_bits >> public_value_length)) *
@@ -209,7 +210,7 @@ contract BaseMixer is MerkleTreeMiMC7, BAC001Holder {
         // correspond to the (digest_length - field_capacity) least significant
         // bits of hsig in big endian
         bytes32 hsig_bytes =
-        (bytes32(primary_inputs[1 + jsOut + nb_hash_digests]) << padding_size +
+        (bytes32(primary_inputs[2 + jsOut + nb_hash_digests]) << padding_size +
         2*public_value_length) >> field_capacity;
 
         // We retrieve the field element corresponding to the `field_capacity`
@@ -217,7 +218,7 @@ contract BaseMixer is MerkleTreeMiMC7, BAC001Holder {
         // casting `field_capacity` bits into a bytes32 We reassemble hsig by
         // adding the values
         uint256 high_bits = uint(
-            primary_inputs[1 + jsIn + jsOut] << (digest_length - field_capacity));
+            primary_inputs[2 + jsIn + jsOut] << (digest_length - field_capacity));
         hsig = bytes32(high_bits + uint(hsig_bytes));
     }
 
@@ -250,7 +251,7 @@ contract BaseMixer is MerkleTreeMiMC7, BAC001Holder {
         // padding). They correspond to the (digest_length - field_capacity)
         // least significant bits of nf in big endian
         bytes32 nf_bytes = (
-            bytes32(primary_inputs[1 + jsOut + nb_hash_digests])
+            bytes32(primary_inputs[2 + jsOut + nb_hash_digests])
             << (padding_size + nf_bit_index)) >> field_capacity;
 
         // We offset the nullifier index by the number of values preceding the
@@ -260,7 +261,7 @@ contract BaseMixer is MerkleTreeMiMC7, BAC001Holder {
         // casting `field_capacity` bits into a bytes32. We reassemble nf by
         // adding the values.
         uint256 high_bits = uint(
-            primary_inputs[1 + jsOut + index] << (digest_length - field_capacity));
+            primary_inputs[2 + jsOut + index] << (digest_length - field_capacity));
         nf = bytes32(high_bits + uint(nf_bytes));
     }
 
@@ -304,9 +305,17 @@ contract BaseMixer is MerkleTreeMiMC7, BAC001Holder {
     }
 
     function checkRoot(uint256[nbInputs] memory primary_inputs) internal returns (bool){
+      int count =0 ;
         for(uint i =0 ;i<=mid; i++) {
-            if(roots[i][bytes32(primary_inputs[0])])
-            return true;
+           if(roots[i][bytes32(primary_inputs[0])]){
+            count++;
+            }
+           if(roots[i][bytes32(primary_inputs[1])]){
+           count++;
+           }
+           if(count==2) {
+               return true;
+           }
         }
         return false;
     }
@@ -317,7 +326,7 @@ contract BaseMixer is MerkleTreeMiMC7, BAC001Holder {
         internal {
         // We re-assemble the commitments (JSOutputs)
         for (uint256 i = 0; i < jsOut; i++) {
-            bytes32 current_commitment = bytes32(primary_inputs[1 + i]);
+            bytes32 current_commitment = bytes32(primary_inputs[2 + i]);
             comms[i] = current_commitment;
             insert(current_commitment);
         }

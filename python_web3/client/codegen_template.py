@@ -1,8 +1,8 @@
 # template for codegen
-from client.bcosclient import (
+from python_web3.client.bcosclient import (
     BcosClient
 )
-from client.datatype_parser import DatatypeParser
+from python_web3.client.datatype_parser import DatatypeParser
 import json
 
 

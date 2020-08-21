@@ -69,6 +69,12 @@ contract BaseMerkleTree {
 
         // If this require fails => the merkle tree is full, we can't append
         // leaves anymore.
+         if( num_leaves==MAX_NUM_LEAVES) {
+             mid = mid+1;
+             num_leaves =  num_leaves % MAX_NUM_LEAVES;
+             initializeTree();
+         }
+
         require(
             num_leaves < MAX_NUM_LEAVES,
             "Merkle tree full: Cannot append anymore"
@@ -77,15 +83,9 @@ contract BaseMerkleTree {
         // Address of the next leaf is the current number of leaves (before
         // insertion).  Compute the next index in the full set of nodes, and
         // write.
-         ++num_leaves;
-       if(num_leaves == MAX_NUM_LEAVES) {
-           mid = mid+1;
-
-        }
-        num_leaves =  num_leaves % MAX_NUM_LEAVES;
 
         uint256 next_address = num_leaves;
-
+        ++num_leaves;
         uint256 next_entry_idx = (MAX_NUM_LEAVES - 1) + next_address;
         nodesWithMid[mid][next_entry_idx] = commitment;
     }

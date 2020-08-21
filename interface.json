@@ -258,5 +258,24 @@
     "balance": "500",
       }
   },
+  {
+    "description": "bac transfer",
+    "request": {
+      "method": "POST",
+      "uri": "/sendAsset",
+      "body": {
+        "username": "hehe",
+        "password": "123456",
+        "toAddress": "0xd9c4065cd3c3ab57e05015527f26bf8de38ff015",
+        "assetAddress": "0x511003e45fdbfdc993d6a87b6c71dedda2fe5e09",
+        "value": 100
+      }
+    },
+    "response": {
+      "status": 0,
+      "address": []
+    }
+  }
+
 ]
 
