@@ -222,6 +222,23 @@
     "privatekey": "0x3fa34c3f31a42c65c4c7056d05d3130f4d0d29bba81266de06b79be3cf80740e",
     "zbac_address": "d3603132dbaf076060d16d911a4adf8d6624b60510a819def82599353a0685ec:8f37a09af7b7469a5b7bef573e941521e8cc8ef6c528b30a16a5b7bb211f7362"
       }
-  }
+  },
+  {
+    "description": "getBalance",
+    "request": {
+      "method": "POST",
+      "uri": "/getBalance",
+
+      "body": {
+        "username": "hehe",
+        "password": "123456",
+        "token_address": "0x511003e45fdbfdc993d6a87b6c71dedda2fe5e09"
+      }
+    },
+    "response": {
+    "status": 0,
+    "balance": "5000000",
+      }
+  },
 ]
 

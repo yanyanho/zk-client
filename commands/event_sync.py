@@ -4,7 +4,7 @@ import time
 from typing import List
 
 import pymysql
-from click import command, option, argument
+
 
 from commands.constants import USER_DIR, WALLET_DIR_DEFAULT, \
     DATABASE_DEFAULT_ADDRESS, DATABASE_DEFAULT_PORT, DATABASE_DEFAULT_USER, DATABASE_DEFAULT_PASSWORD, \
@@ -125,9 +125,8 @@ class EventCallbackImpl(EventCallbackHandler):
             wallet.update_and_save_state()
 
 
-@command()
-@argument("mixer_addr")
-def event_sync(mixer_addr: str):
+
+def event_sync():
 
     indexed_value = None
     try:

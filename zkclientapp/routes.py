@@ -93,13 +93,16 @@ def genAccount(request) -> None:
 	result = {}
 	req = json.loads(request.body)
 	keystore_file = "{}/{}/{}".format(USER_DIR, req['username'], FISCO_ADDRESS_FILE)
-	if exists(keystore_file):
-		result['status'] = 1
-		result['text'] = 'username existed'
-		return JsonResponse(result)
 	addr_file = "{}/{}/{}".format(USER_DIR, req['username'], ADDRESS_FILE_DEFAULT)
-	if exists(addr_file):
-		result['status'] = 1
+	if exists(keystore_file) and exists(addr_file):
+		with open(keystore_file, "r") as dump_f:
+			keytext = json.load(dump_f)
+			privatekey = Account.decrypt(keytext, req['password'])
+			account = Account.privateKeyToAccount(req['privatekey'])
+			result['fisco_address'] = account.address
+		zbac_addr = load_zeth_address(username)
+		result['zbac_address'] = str(zbac_addr)
+		result['status'] = 0
 		result['text'] = 'account existed'
 		return JsonResponse(result)
 	(address, publickey, privatekey) = gen_fisco_address(req['username'], req['password'])
@@ -124,8 +127,16 @@ def importFiscoAddr(request) -> None:
 	req = json.loads(request.body)
 	account = Account.privateKeyToAccount(req['privatekey'])
 	keystore_file = "{}/{}/{}".format(USER_DIR, req['username'], FISCO_ADDRESS_FILE)
+	addr_file = "{}/{}/{}".format(USER_DIR, req['username'], ADDRESS_FILE_DEFAULT)
 	if exists(keystore_file):
-		result['status'] = 1
+		with open(keystore_file, "r") as dump_f:
+			keytext = json.load(dump_f)
+			privatekey = Account.decrypt(keytext, req['password'])
+			account = Account.privateKeyToAccount(req['privatekey'])
+			result['fisco_address'] = account.address
+		zbac_addr = load_zeth_address(username)
+		result['zbac_address'] = str(zbac_addr)
+		result['status'] = 0
 		result['text'] = 'keystore existed'
 		return JsonResponse(result)
 	user_dir = "{}/{}/{}".format(USER_DIR, req['username'], WALLET_DIR_DEFAULT)
@@ -133,7 +144,6 @@ def importFiscoAddr(request) -> None:
 	keytext = Account.encrypt(account.privateKey, req['password'])
 	with open(keystore_file, "w") as dump_f:
 		json.dump(keytext, dump_f)
-	addr_file = "{}/{}/{}".format(USER_DIR, req['username'], ADDRESS_FILE_DEFAULT)
 	zbac_addr = ''
 	if not exists(addr_file):
 		zbac_addr = zbac_addr + str(gen_address(req['username']))
@@ -208,7 +218,7 @@ def deployMixer(request) -> None:
 def sendAsset(request) -> None:
 	result = {}
 	req = json.loads(request.body)
-	asset_instance = BAC001(req['assetAddress'])
+	asset_instance = BAC001(req['token_address'])
 	keystore_file = "{}/{}/{}".format(USER_DIR, req['username'], FISCO_ADDRESS_FILE)
 	with open(keystore_file, "r") as dump_f:
 		keytext = json.load(dump_f)
@@ -227,7 +237,7 @@ def sendAsset(request) -> None:
 	print("send tranaction output {}", out)
 	balance = asset_instance.balance(keypair.address)
 	result['status'] = 0
-	result['address'] = balance
+	result['balance'] = balance
 	return JsonResponse(result)
 
 '''
@@ -531,3 +541,22 @@ def getTransactions(request) -> None:
 		result['status'] = 1
 		result['text'] = 'your account is not recorded in server, please import it firstly or create a new one'
 		return JsonResponse(result)
+
+def getBalance(request) -> None:
+	result = {}
+	req = json.loads(request.body)
+	bac_instance = BAC001(req['token_address'])
+	keystore_file = "{}/{}/{}".format(USER_DIR, req['username'], FISCO_ADDRESS_FILE)
+	with open(keystore_file, "r") as dump_f:
+		keytext = json.load(dump_f)
+		privkey = Account.decrypt(keytext, req['password'])
+		bac_instance.client.ecdsa_account = Account.from_key(privkey)
+		keypair = BcosKeyPair()
+		keypair.private_key = bac_instance.client.ecdsa_account.privateKey
+		keypair.public_key = bac_instance.client.ecdsa_account.publickey
+		keypair.address = bac_instance.client.ecdsa_account.address
+		bac_instance.client.keypair = keypair
+	balance = bac_instance.balance(bac_instance.client.ecdsa_account.address)
+	result['status'] = 0
+	result['balance'] = balance
+	return JsonResponse(result)
