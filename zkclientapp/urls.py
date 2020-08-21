@@ -26,4 +26,5 @@ urlpatterns = [
     url(r'^getTransactions$', routes.getTransactions),
     url(r'^getContract$', routes.getContract),
     url(r'^getBalance$', routes.getBalance),
+    url(r'^faucet$', routes.faucet),
 ]

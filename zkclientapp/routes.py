@@ -98,9 +98,9 @@ def genAccount(request) -> None:
 		with open(keystore_file, "r") as dump_f:
 			keytext = json.load(dump_f)
 			privatekey = Account.decrypt(keytext, req['password'])
-			account = Account.privateKeyToAccount(req['privatekey'])
+			account = Account.privateKeyToAccount(privatekey)
 			result['fisco_address'] = account.address
-		zbac_addr = load_zeth_address(username)
+		zbac_addr = load_zeth_address_public(req['username'])
 		result['zbac_address'] = str(zbac_addr)
 		result['status'] = 0
 		result['text'] = 'account existed'
@@ -132,9 +132,9 @@ def importFiscoAddr(request) -> None:
 		with open(keystore_file, "r") as dump_f:
 			keytext = json.load(dump_f)
 			privatekey = Account.decrypt(keytext, req['password'])
-			account = Account.privateKeyToAccount(req['privatekey'])
+			account = Account.privateKeyToAccount(privatekey)
 			result['fisco_address'] = account.address
-		zbac_addr = load_zeth_address(username)
+		zbac_addr = load_zeth_address_public(req['username'])
 		result['zbac_address'] = str(zbac_addr)
 		result['status'] = 0
 		result['text'] = 'keystore existed'
@@ -232,13 +232,35 @@ def sendAsset(request) -> None:
 	print(f"- {req['username']}  the transfer of BAC001asset to the Mixer")
 	value = EtherValue(req['value'])
 	out, transactionReceipt = asset_instance.send(
-		req['toAddress'],
+		req['fiscoAddress'],
 		value.wei,'')
 	print("send tranaction output {}", out)
 	balance = asset_instance.balance(keypair.address)
 	result['status'] = 0
 	result['balance'] = balance
 	return JsonResponse(result)
+
+def faucet(request) -> None:
+	print("apply for bac tokens")
+	result = {}
+	req = json.loads(request.body)
+	asset_instance = BAC001(req['token_address'])
+	asset_instance.client = BcosClient()
+	value = EtherValue(req['value'])
+	keystore_file = "{}/{}/{}".format(USER_DIR, req['username'], FISCO_ADDRESS_FILE)
+	with open(keystore_file, "r") as dump_f:
+		keytext = json.load(dump_f)
+		privatekey = Account.decrypt(keytext, req['password'])
+		account = Account.privateKeyToAccount(privatekey)
+		out, transactionReceipt = asset_instance.send(
+			account.address,
+			value.wei,'')
+		balance = asset_instance.balance(account.address)
+		print("get tokens: ", balance)
+		result['status'] = 0
+		result['balance'] = balance
+		return JsonResponse(result)
+
 
 '''
 deposit bac to mixer and get two notes with specified value
@@ -484,19 +506,17 @@ def getContract(request) -> None:
 		"contractName": resultbac[0],
 		"contractType": resultbac[1],
 		"contractAddr": resultbac[2],
-		"createtime": resultbac[3],
-		"ownerAddr": resultbac[4],
-		"totalAmount": resultbac[5],
-		"shortName": resultbac[6],
+		"ownerAddr": resultbac[3],
+		"totalAmount": resultbac[4],
+		"shortName": resultbac[5],
 	}
 	mixerContract = {
 		"contractName": resultmixer[0],
 		"contractType": resultmixer[1],
 		"contractAddr": resultmixer[2],
-		"createtime": resultmixer[3],
-		"ownerAddr": resultmixer[4],
-		"totalAmount": resultmixer[5],
-		"shortName": resultmixer[6],
+		"ownerAddr": resultmixer[3],
+		"totalAmount": resultmixer[4],
+		"shortName": resultmixer[5],
 	}
 	result['contracts'] = {
 		"bacContract": bacContract,
@@ -528,7 +548,6 @@ def getTransactions(request) -> None:
 						"publicOutput": resultTra[3],
 						"input_notes": resultTra[4],
 						"output_specs": resultTra[5],
-						"time": resultTra[6],
 					}
 					result['transactions'].append(transacInfo)
 				result['status'] = 0

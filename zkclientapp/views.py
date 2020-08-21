@@ -3,7 +3,6 @@ from commands.constants import DATABASE_DEFAULT_ADDRESS, DATABASE_DEFAULT_PORT, 
 from commands.zeth_token_deploy import  deploy_asset
 from commands.zeth_deploy import deploy
 import pymysql
-import time
 import re
 BACTYPE = "bac"
 MIXERTYPE = "mixer"
@@ -18,7 +17,7 @@ db = pymysql.connect(
 cursor = db.cursor()
 # Create your views here.
 ownerAddr = "0x598cf8fba4dcc36417f4c11497dee7eb23fb1431"
-
+'''
 def create_table():
     print("check whether existed tables")
     sqlSearch = "show tables"
@@ -45,7 +44,7 @@ def create_table():
         sqlCreateTra = "create table transactions (traType char(20), username char(20), vin int, vout int, input_notes char(40), output_specs text(2000), time char(60))"
         cursor.execute(sqlCreateTra)
         db.commit()
-
+'''
 
 
 def deploy_contract():
@@ -68,11 +67,10 @@ def deploy_contract():
             mixer_address = deploy(token_address)
             if mixer_address:
                 print("save mixer contract to database, address: ", mixer_address)
-                timestr = time.strftime('%Y-%m-%d %H:%M:%S')
-                sqlInsertMixer = "insert into contract (conName, conType, conAddr, time, owner, totalAmount, shortName) values (%s, %s, %s, %s, %s, %s, %s);"
+                sqlInsertMixer = "insert into contract (conName, conType, conAddr, owner, totalAmount, shortName) values (%s, %s, %s, %s, %s, %s);"
                 conName = "Groth16Mixer"
                 shortName = "mixer_test"
-                cursor.execute(sqlInsertMixer, [conName, MIXERTYPE, mixer_address, timestr, ownerAddr, 0, shortName])
+                cursor.execute(sqlInsertMixer, [conName, MIXERTYPE, mixer_address, ownerAddr, 0, shortName])
                 db.commit()
     else:
         print("deploy bac token contract")
@@ -82,22 +80,20 @@ def deploy_contract():
         token_address = deploy_asset("bac token test contract", shortName, minUnit, totalAmount)
         if token_address:
             print("save bac token contract to database, address: ", token_address)
-            timestr = time.strftime('%Y-%m-%d %H:%M:%S')
-            sqlInsertBac = "insert into contract (conName, conType, conAddr, time, owner, totalAmount, shortName) values (%s, %s, %s, %s, %s, %s, %s);"
+            sqlInsertBac = "insert into contract (conName, conType, conAddr, owner, totalAmount, shortName) values (%s, %s, %s, %s, %s, %s);"
             conName = "BAC001"
-            cursor.execute(sqlInsertBac, [conName, BACTYPE, token_address, timestr, ownerAddr, totalAmount, shortName])
+            cursor.execute(sqlInsertBac, [conName, BACTYPE, token_address, ownerAddr, totalAmount, shortName])
             db.commit()
             print("deploy mixer contract on bac token contract of: ", token_address)
             mixer_address = deploy(token_address)
             if mixer_address:
                 print("save mixer contract to database, address: ", mixer_address)
-                timestrMixer = time.strftime('%Y-%m-%d %H:%M:%S')
-                sqlInsertMixer = "insert into contract (conName, conType, conAddr, time, owner, totalAmount, shortName) values (%s, %s, %s, %s, %s, %s, %s);"
+                sqlInsertMixer = "insert into contract (conName, conType, conAddr, owner, totalAmount, shortName) values (%s, %s, %s, %s, %s, %s);"
                 conNameMixer = "Groth16Mixer"
                 shortNameMixer = "mixer_test"
-                cursor.execute(sqlInsertMixer, [conNameMixer, MIXERTYPE, mixer_address, timestrMixer, ownerAddr, 0, shortNameMixer])
+                cursor.execute(sqlInsertMixer, [conNameMixer, MIXERTYPE, mixer_address, ownerAddr, 0, shortNameMixer])
                 db.commit()
 
-create_table()
+#create_table()
 
 deploy_contract()

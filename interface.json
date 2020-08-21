@@ -240,5 +240,23 @@
     "balance": "5000000",
       }
   },
+  {
+    "description": "faucet",
+    "request": {
+      "method": "POST",
+      "uri": "/faucet",
+
+      "body": {
+        "username": "hehe",
+        "password": "123456",
+        "token_address": "0x511003e45fdbfdc993d6a87b6c71dedda2fe5e09",
+        "value": 5000
+      }
+    },
+    "response": {
+    "status": 0,
+    "balance": "500",
+      }
+  },
 ]
 
