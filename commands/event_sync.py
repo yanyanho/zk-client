@@ -125,7 +125,6 @@ class EventCallbackImpl(EventCallbackHandler):
             wallet.update_and_save_state()
 
 
-
 def event_sync():
 
     indexed_value = None
