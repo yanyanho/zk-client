@@ -15,6 +15,8 @@ from python_web3.client.bcoskeypair import BcosKeyPair
 from zeth.utils import EtherValue, from_zeth_units
 from python_web3.eth_account.account import Account
 from commands.constants import USER_DIR, FISCO_ADDRESS_FILE, WALLET_DIR_DEFAULT, ADDRESS_FILE_DEFAULT
+from commands.constants import DATABASE_DEFAULT_ADDRESS, DATABASE_DEFAULT_PORT, DATABASE_DEFAULT_USER, DATABASE_DEFAULT_PASSWORD, DATABASE_DEFAULT_DATABASE
+
 from django.shortcuts import render
 from api.zeth_messages_pb2 import ZethNote
 import json
@@ -26,7 +28,16 @@ from typing import List, Tuple
 from zeth.wallet import _ensure_dir
 from . import models
 from .models import merkletree
-
+import pymysql
+db = pymysql.connect(
+    host = DATABASE_DEFAULT_ADDRESS,
+    port = DATABASE_DEFAULT_PORT,
+    user = DATABASE_DEFAULT_USER,
+    password = DATABASE_DEFAULT_PASSWORD,
+    database = DATABASE_DEFAULT_DATABASE,
+    charset='utf8'
+    )
+cursor = db.cursor()
 '''
 The wallet of user is designed as that every wallet need to be specified a username and store the 
 reference accounts and assets data of that user. There two kinds of account in the wallet of a user,
@@ -275,6 +286,12 @@ def depositBac(request) -> None:
 				result['commits'] = commits
 				result['total_value'] = total.ether()
 				'''
+				traType = "deposit"
+				output_specstr = output_specs[0] + ';' + output_specs[1]
+				timestr = time.strftime('%Y-%m-%d %H:%M:%S')
+				sqlInsert = "insert into transactions (traType, username, vin, vout, output_specs, time) values (%s, %s, %s, %s, %s, %s);"
+				cursor.execute(sqlInsert, [traType, req['username'], req['token_amount'], 0, output_specstr, timestr])
+				db.commit()
 				result['status'] = 0
 				result['text'] = 'deposit success'
 				return JsonResponse(result)
@@ -362,6 +379,17 @@ def mixBac(request) -> None:
 			result['commits'] = commits
 			result['total_value'] = total.ether()
 			'''
+			traType = "mix"
+			timestr = time.strftime('%Y-%m-%d %H:%M:%S')
+			inputstr = ""
+			for note_id in req['input_notes']:
+				inputstr = inputstr + note_id + ';'
+			outputstr = ""
+			for out_spec in req['output_specs']:
+				outputstr = outputstr + out_spec + ';'
+			sqlInsert = "insert into transactions (traType, username, vin, vout, input_notes, output_specs, time) values (%s, %s, %s, %s, %s, %s, %s);"
+			cursor.execute(sqlInsert, [traType, req['username'], req['vin'], req['vout'], inputstr, outputstr, timestr])
+			db.commit()
 			result['status'] = 0
 			result['text'] = 'mix success'
 			return JsonResponse(result)
@@ -434,3 +462,72 @@ def getCommits(request) -> None:
 	result['text'] = 'your account is not recorded in server, please import it firstly or create a new one'
 	return JsonResponse(result)
 '''
+def getContract(request) -> None:
+	result = {}
+	sqlSearch = "select * from contract"
+	cursor.execute(sqlSearch)
+	results = cursor.fetchall()
+	db.commit()
+	resultbac = results[0]
+	resultmixer = results[1]
+	bacContract = {
+		"contractName": resultbac[0],
+		"contractType": resultbac[1],
+		"contractAddr": resultbac[2],
+		"createtime": resultbac[3],
+		"ownerAddr": resultbac[4],
+		"totalAmount": resultbac[5],
+		"shortName": resultbac[6],
+	}
+	mixerContract = {
+		"contractName": resultmixer[0],
+		"contractType": resultmixer[1],
+		"contractAddr": resultmixer[2],
+		"createtime": resultmixer[3],
+		"ownerAddr": resultmixer[4],
+		"totalAmount": resultmixer[5],
+		"shortName": resultmixer[6],
+	}
+	result['contracts'] = {
+		"bacContract": bacContract,
+		"mixerContract": mixerContract,
+	}
+	result['status'] = 0
+	return JsonResponse(result)
+
+
+def getTransactions(request) -> None:
+	result = {}
+	req = json.loads(request.body)
+	keystore_file = "{}/{}/{}".format(USER_DIR, req['username'], FISCO_ADDRESS_FILE)
+	if exists(keystore_file):
+		with open(keystore_file, "r") as dump_f:
+			keytext = json.load(dump_f)
+			privatekey = Account.decrypt(keytext, req['password'])
+			if privatekey:
+				sqlSearch = "select * from transactions where username = %s"
+				cursor.execute(sqlSearch, [req['username']])
+				results = cursor.fetchall()
+				db.commit()
+				result['transactions'] = []
+				for resultTra in results:
+					transacInfo = {
+						"trasactionType": resultTra[0],
+						"senderName": resultTra[1],
+						"publicInput": resultTra[2],
+						"publicOutput": resultTra[3],
+						"input_notes": resultTra[4],
+						"output_specs": resultTra[5],
+						"time": resultTra[6],
+					}
+					result['transactions'].append(transacInfo)
+				result['status'] = 0
+				return JsonResponse(result)
+			else:
+				result['status'] = 1
+				result['text'] = 'password not true'
+				return JsonResponse(result)
+	else:
+		result['status'] = 1
+		result['text'] = 'your account is not recorded in server, please import it firstly or create a new one'
+		return JsonResponse(result)
