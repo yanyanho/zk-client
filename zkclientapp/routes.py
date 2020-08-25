@@ -329,6 +329,7 @@ def depositBac(request) -> None:
 				traType = "deposit"
 				output_specstr = output_specs[0] + ';' + output_specs[1]
 				sqlInsert = "insert into transactions (traType, username, vin, vout, output_specs) values (%s, %s, %s, %s, %s);"
+				db.ping(reconnect=True)
 				cursor.execute(sqlInsert, [traType, req['username'], req['token_amount'], 0, output_specstr])
 				db.commit()
 				result['status'] = 0
@@ -426,6 +427,7 @@ def mixBac(request) -> None:
 			for out_spec in req['output_specs']:
 				outputstr = outputstr + out_spec + ';'
 			sqlInsert = "insert into transactions (traType, username, vin, vout, input_notes, output_specs) values (%s, %s, %s, %s, %s, %s);"
+			db.ping(reconnect=True)
 			cursor.execute(sqlInsert, [traType, req['username'], req['vin'], req['vout'], inputstr, outputstr])
 			db.commit()
 			result['status'] = 0
@@ -503,6 +505,7 @@ def getCommits(request) -> None:
 def getContract(request) -> None:
 	result = {}
 	sqlSearch = "select * from contract"
+	db.ping(reconnect=True)
 	cursor.execute(sqlSearch)
 	results = cursor.fetchall()
 	db.commit()
@@ -542,6 +545,7 @@ def getTransactions(request) -> None:
 			privatekey = Account.decrypt(keytext, req['password'])
 			if privatekey:
 				sqlSearch = "select * from transactions where username = %s"
+				db.ping(reconnect=True)
 				cursor.execute(sqlSearch, [req['username']])
 				results = cursor.fetchall()
 				db.commit()

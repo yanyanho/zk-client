@@ -248,6 +248,7 @@ class sqlMerkleTree(MerkleTree):
     def open(max_num_leaves: int, mid: int) -> sqlMerkleTree:
         depth = int(math.log(max_num_leaves, 2))
         sqlSearch = "select * from merkletree where MID=%s"
+        db.ping(reconnect=True)
         cursor.execute(sqlSearch, [mid])
         results = cursor.fetchall()
         db.commit()
@@ -263,7 +264,9 @@ class sqlMerkleTree(MerkleTree):
 
     def save(self, blockNumber: int, mid: int) -> None:
         sqlSearch = "select * from merkletree where MID=%s"
+        db.ping(reconnect=True)
         cursor.execute(sqlSearch, [mid])
+        db.commit()
         results = cursor.fetchall()
         if not results:
             json_str = json.dumps(self.tree_data.to_json_dict())

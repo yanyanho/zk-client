@@ -135,6 +135,7 @@ def event_sync():
         MIXERTYPE = "mixer"
         mixer_addr = ""
         while tag:
+            db.ping(reconnect=True)
             cursor.execute(sqlSearchMixer, [MIXERTYPE])
             resultMixer = cursor.fetchall()
             db.commit()

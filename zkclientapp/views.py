@@ -52,6 +52,7 @@ def create_table():
 def deploy_contract():
     print("check whether existed bac token contract and mixer contract")
     sqlSearchBac = "select * from contract where conType = %s"
+    db.ping(reconnect=True)
     cursor.execute(sqlSearchBac, [BACTYPE])
     resultBac = cursor.fetchall()
     db.commit()
