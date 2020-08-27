@@ -45,13 +45,14 @@ contract Groth16Mixer is BaseMixer {
     constructor(
         uint256 mk_depth,
         address token,
+        address poseidonAddress,
         uint256[2] memory Alpha,
         uint256[2] memory Beta1,
         uint256[2] memory Beta2,
         uint256[2] memory Delta1,
         uint256[2] memory Delta2,
         uint256[] memory ABC_coords)
-        BaseMixer(mk_depth, token)
+        BaseMixer(mk_depth, token, poseidonAddress)
         public {
         verifyKey.Alpha = Pairing.G1Point(Alpha[0], Alpha[1]);
         verifyKey.Beta = Pairing.G2Point(Beta1[0], Beta1[1], Beta2[0], Beta2[1]);

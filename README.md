@@ -47,3 +47,5 @@ DATABASE_DEFAULT_DATABASE = "zk_test"（数据库名字）
 python manage.py runserver 0.0.0.0:5002 
 #启动django服务（如果python命令默认是python2，请使用python3命令）  
   ```
+
+sudo yum install python3-devel 

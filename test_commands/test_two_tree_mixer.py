@@ -16,6 +16,7 @@ import zeth.constants as constants
 import zeth.merkle_tree
 import zeth.utils
 from commands.constants import PROVER_SERVER_ENDPOINT_DEFAULT
+from commands.poseidon_deploy import deployPoseidon
 from commands.zeth_deploy import deploy
 from commands.zeth_token_deploy import deploy_asset
 from contract.BAC001 import BAC001
@@ -116,7 +117,10 @@ def main() -> None:
 
     asset_address = deploy_asset("AAAA", "AAA", 18, 100000000)
     token_instance = BAC001(asset_address)
-    mixer_address = deploy(asset_address)
+
+    poseidon_address = deployPoseidon()
+
+    mixer_address = deploy(asset_address,poseidon_address)
     mixer_instance = Groth16Mixer(mixer_address)
     mixer_instance.client.ecdsa_account = deployer_ac
     mixer_instance.client.keypair = deployer_keypair

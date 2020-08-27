@@ -5,7 +5,7 @@
 pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
-import "./MerkleTreeMiMC7.sol";
+import "./MerkleTreePos.sol";
 
 // Declare the BAC001 interface in order to handle BAC001 tokens transfers to and
 // from the Mixer. Note that we only declare the functions we are interested in,
@@ -24,7 +24,7 @@ contract BAC001Holder {
 
 // BaseMixer implements the functions shared across all Mixers (regardless which
 // zkSNARK is used)
-contract BaseMixer is MerkleTreeMiMC7, BAC001Holder {
+contract BaseMixer is MerkleTreePos, BAC001Holder {
 
     // The roots of the different updated trees
     mapping(uint => mapping(bytes32 => bool)) roots;
@@ -112,7 +112,7 @@ contract BaseMixer is MerkleTreeMiMC7, BAC001Holder {
     event LogDebug(string message);
 
     // Constructor
-    constructor(uint256 depth, address token_address) MerkleTreeMiMC7(depth)
+    constructor(uint256 depth, address token_address, address poseidonAddress) MerkleTreePos(depth,poseidonAddress)
         public {
         bytes32 initialRoot = nodesWithMid[0][0];
         roots[0][initialRoot] = true;
@@ -209,17 +209,19 @@ contract BaseMixer is MerkleTreeMiMC7, BAC001Holder {
         // residual bits and remove any extra bits (due to the padding) They
         // correspond to the (digest_length - field_capacity) least significant
         // bits of hsig in big endian
-        bytes32 hsig_bytes =
-        (bytes32(primary_inputs[2 + jsOut + nb_hash_digests]) << padding_size +
-        2*public_value_length) >> field_capacity;
+//        bytes32 hsig_bytes =
+//        (bytes32(primary_inputs[2 + jsOut + nb_hash_digests]) << padding_size +
+//        2*public_value_length) >> field_capacity
 
         // We retrieve the field element corresponding to the `field_capacity`
         // most significant bits of hsig We remove the left padding due to
         // casting `field_capacity` bits into a bytes32 We reassemble hsig by
         // adding the values
-        uint256 high_bits = uint(
-            primary_inputs[2 + jsIn + jsOut] << (digest_length - field_capacity));
-        hsig = bytes32(high_bits + uint(hsig_bytes));
+//        uint256 high_bits = uint(
+//            primary_inputs[2 + jsIn + jsOut] << (digest_length - field_capacity));
+
+       uint256 high_bits = uint(primary_inputs[2 + jsIn + jsOut] );
+        hsig = bytes32(high_bits);
     }
 
     // This function is used to reassemble the nullifiers given the nullifier
@@ -240,19 +242,19 @@ contract BaseMixer is MerkleTreeMiMC7, BAC001Holder {
         // We compute the nullifier's residual bits index and check the 1st
         // f.e. indeed comprises it. See the way the residual bits are ordered
         // in the extended proof
-        uint256 nf_bit_index =
-        2*public_value_length + (1 + index) * packing_residue_length;
-        require(
-            field_capacity >= nf_bit_index + packing_residue_length,
-            "nullifier written in different residual bit f.e."
-        );
+//        uint256 nf_bit_index =
+//        2*public_value_length + (1 + index) * packing_residue_length;
+//        require(
+//            field_capacity >= nf_bit_index + packing_residue_length,
+//            "nullifier written in different residual bit f.e."
+//        );
 
         // We retrieve nf's residual bits and remove any extra bits (due to the
         // padding). They correspond to the (digest_length - field_capacity)
         // least significant bits of nf in big endian
-        bytes32 nf_bytes = (
-            bytes32(primary_inputs[2 + jsOut + nb_hash_digests])
-            << (padding_size + nf_bit_index)) >> field_capacity;
+//        bytes32 nf_bytes =
+//            bytes32(primary_inputs[2 + jsOut + nb_hash_digests]);
+//            << (padding_size + nf_bit_index)) >> field_capacity;
 
         // We offset the nullifier index by the number of values preceding the
         // nullifiers in the primary inputs: the root (1) and the cms (jsOut)
@@ -260,9 +262,12 @@ contract BaseMixer is MerkleTreeMiMC7, BAC001Holder {
         // most significant bits of nf. We remove the left padding due to
         // casting `field_capacity` bits into a bytes32. We reassemble nf by
         // adding the values.
-        uint256 high_bits = uint(
-            primary_inputs[2 + jsOut + index] << (digest_length - field_capacity));
-        nf = bytes32(high_bits + uint(nf_bytes));
+//        uint256 high_bits = uint(
+//            primary_inputs[2 + jsOut + index] << (digest_length - field_capacity));
+
+          uint256 high_bits = uint(
+           primary_inputs[2 + jsOut + index]);
+        nf = bytes32(high_bits);
     }
 
     // This function processes the primary inputs to append and check the root
@@ -297,6 +302,9 @@ contract BaseMixer is MerkleTreeMiMC7, BAC001Holder {
         // they are equal (i.e. that h_sig re-assembled was correctly generated
         // from vk).
         bytes32 expected_hsig = sha256(abi.encodePacked(nfs, vk));
+
+        expected_hsig =  expected_hsig >> 3;
+
         bytes32 hsig = assemble_hsig(primary_inputs);
         require(
             expected_hsig == hsig,
