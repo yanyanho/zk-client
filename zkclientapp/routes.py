@@ -110,7 +110,7 @@ def genAccount(request) -> None:
 			keytext = json.load(dump_f)
 			try:
 				privatekey = Account.decrypt(keytext, req['password'])
-			except:
+			except ValueError:
 				result['status'] = 1
 				result['text'] = 'invalid password'
 				return JsonResponse(result)
@@ -254,7 +254,7 @@ def sendAsset(request) -> None:
 	print("send tranaction output {}", out)
 	balance = asset_instance.balance(keypair.address)
 	result['status'] = 0
-	result['balance'] = balance
+	result['balance'] = balance[0]/1000000000000000000.0
 	return JsonResponse(result)
 
 def faucet(request) -> None:
@@ -275,7 +275,7 @@ def faucet(request) -> None:
 		balance = asset_instance.balance(account.address)
 		print("get tokens: ", balance)
 		result['status'] = 0
-		result['balance'] = balance//1000000000000000000.0
+		result['balance'] = balance/1000000000000000000.0
 		return JsonResponse(result)
 
 
@@ -596,5 +596,5 @@ def getBalance(request) -> None:
 		bac_instance.client.keypair = keypair
 	balance = bac_instance.balance(bac_instance.client.ecdsa_account.address)
 	result['status'] = 0
-	result['balance'] = balance/1000000000000000000.0
+	result['balance'] = balance[0]/1000000000000000000.0
 	return JsonResponse(result)
