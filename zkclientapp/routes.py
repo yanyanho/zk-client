@@ -29,7 +29,7 @@ import time
 from django.http import JsonResponse
 from os.path import exists
 from typing import List, Tuple
-
+from __future__ import division
 from zeth.utils import EtherValue, from_zeth_units
 from zeth.wallet import _ensure_dir
 from zeth.zeth_address import ZethAddressPub
@@ -100,14 +100,24 @@ def genFiscoAddr(request) -> None:
 def genAccount(request) -> None:
 	result = {}
 	req = json.loads(request.body)
+	if req['username'] is None or req['username'] == '':
+		result['status'] = 0
+		result['text'] = 'username cannot be null'
+
 	keystore_file = "{}/{}/{}".format(USER_DIR, req['username'], FISCO_ADDRESS_FILE)
 	addr_file = "{}/{}/{}".format(USER_DIR, req['username'], ADDRESS_FILE_DEFAULT)
 	if exists(keystore_file) and exists(addr_file):
 		with open(keystore_file, "r") as dump_f:
 			keytext = json.load(dump_f)
-			privatekey = Account.decrypt(keytext, req['password'])
+			try:
+				privatekey = Account.decrypt(keytext, req['password'])
+			except:
+				result['status'] = 1
+				result['text'] = 'invalid password'
+				return JsonResponse(result)
 			account = Account.privateKeyToAccount(privatekey)
 			result['fisco_address'] = account.address
+
 		zbac_addr = load_zeth_address_public(req['username'])
 		result['zbac_address'] = str(zbac_addr)
 		result['status'] = 0
@@ -266,7 +276,7 @@ def faucet(request) -> None:
 		balance = asset_instance.balance(account.address)
 		print("get tokens: ", balance)
 		result['status'] = 0
-		result['balance'] = balance
+		result['balance'] = balance.ether()
 		return JsonResponse(result)
 
 
@@ -587,5 +597,5 @@ def getBalance(request) -> None:
 		bac_instance.client.keypair = keypair
 	balance = bac_instance.balance(bac_instance.client.ecdsa_account.address)
 	result['status'] = 0
-	result['balance'] = balance
+	result['balance'] = balance.ether()
 	return JsonResponse(result)

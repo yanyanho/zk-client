@@ -21,7 +21,7 @@ Python钱包服务以Django服务框架为基础，使用fisco python sdk与fisc
  1 拉取代码：  
     git clone https://github.com/yanyanho/zk-client.git  
  2 进入zk-client目录  
-    pip install -r requirement.txt 安装相关python库
+    pip install -r requirements.txt 安装相关python库
 
  3 拷贝fisco节点sdk证书到python_web3/bin目录下     
  4 在./commands/constants.py中配置prover_server，fisco节点，mysql服务器的地址，端口和数据库等信息:
