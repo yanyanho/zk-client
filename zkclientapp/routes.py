@@ -29,7 +29,6 @@ import time
 from django.http import JsonResponse
 from os.path import exists
 from typing import List, Tuple
-from __future__ import division
 from zeth.utils import EtherValue, from_zeth_units
 from zeth.wallet import _ensure_dir
 from zeth.zeth_address import ZethAddressPub
@@ -103,7 +102,7 @@ def genAccount(request) -> None:
 	if req['username'] is None or req['username'] == '':
 		result['status'] = 0
 		result['text'] = 'username cannot be null'
-
+		return JsonResponse(result)
 	keystore_file = "{}/{}/{}".format(USER_DIR, req['username'], FISCO_ADDRESS_FILE)
 	addr_file = "{}/{}/{}".format(USER_DIR, req['username'], ADDRESS_FILE_DEFAULT)
 	if exists(keystore_file) and exists(addr_file):
@@ -276,7 +275,7 @@ def faucet(request) -> None:
 		balance = asset_instance.balance(account.address)
 		print("get tokens: ", balance)
 		result['status'] = 0
-		result['balance'] = balance.ether()
+		result['balance'] = balance//1000000000000000000.0
 		return JsonResponse(result)
 
 
@@ -597,5 +596,5 @@ def getBalance(request) -> None:
 		bac_instance.client.keypair = keypair
 	balance = bac_instance.balance(bac_instance.client.ecdsa_account.address)
 	result['status'] = 0
-	result['balance'] = balance.ether()
+	result['balance'] = balance/1000000000000000000.0
 	return JsonResponse(result)
