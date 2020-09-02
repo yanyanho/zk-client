@@ -275,7 +275,7 @@ def faucet(request) -> None:
 		balance = asset_instance.balance(account.address)
 		print("get tokens: ", balance)
 		result['status'] = 0
-		result['balance'] = balance/1000000000000000000.0
+		result['balance'] = balance[0]/1000000000000000000.0
 		return JsonResponse(result)
 
 
