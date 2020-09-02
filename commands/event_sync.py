@@ -175,9 +175,9 @@ def event_sync():
         print(
             "after register LogMix,result:{},all:{}".format(
                 result['result'], result))
-
+        print("waiting event...")
         while True:
-            print("waiting event...")
+            # print("waiting event...")
             time.sleep(10)
     except Exception as e:
         print("Exception!")
