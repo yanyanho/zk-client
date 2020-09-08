@@ -3,12 +3,8 @@ import sys
 import time
 from typing import List
 
-import pymysql
-
-
-from commands.constants import USER_DIR, WALLET_DIR_DEFAULT, \
-    DATABASE_DEFAULT_ADDRESS, DATABASE_DEFAULT_PORT, DATABASE_DEFAULT_USER, DATABASE_DEFAULT_PASSWORD, \
-    DATABASE_DEFAULT_DATABASE
+from commands.mysql_pool import MysqlPool
+from commands.constants import USER_DIR, WALLET_DIR_DEFAULT
 from commands.utils import load_zeth_address
 from python_web3.client.bcosclient import BcosClient
 from python_web3.client.datatype_parser import DatatypeParser
@@ -20,37 +16,6 @@ from zeth.merkle_tree import sqlMerkleTree
 from zeth.constants import ZETH_MERKLE_TREE_DEPTH
 import math
 
-'''
-def usage():
-    usagetext = '\nUsage:\nparams: contractname address event_name indexed\n' \
-                '\t1. contractname :\t合约的文件名,不需要带sol后缀,默认在当前目录的contracts目录下\n' \
-                '\t2. address :\t十六进制的合约地址,或者可以为:last,表示采用bin/contract.ini里的记录\n' \
-                '\t3. event_name :\t可选,如不设置监听所有事件 \n' \
-                '\t4. indexed :\t可选,根据event定义里的indexed字段,作为过滤条件)\n\n'
-    usagetext = usagetext + "\teg: for contract sample [contracts/HelloEvent.sol], use cmdline:\n\n"
-
-    usagetext = usagetext + "\tpython demo_event_callback.py HelloEvent last \n"
-    usagetext = usagetext + "\t--listen all event at all indexed ： \n\n"
-
-    usagetext = usagetext + "\tpython demo_event_callback.py HelloEvent last on_set \n"
-    usagetext = usagetext + "\t--listen event on_set(string newname) （no indexed）： \n\n"
-
-    usagetext = usagetext + \
-        "\tpython demo_event_callback.py HelloEvent last on_number 5\n"
-    usagetext = usagetext + \
-        "\t--listen event on_number(string name,int indexed age), age ONLY  5 ： \n"
-    usagetext = usagetext + "\n...(and other events)"
-    print(usagetext)
-'''
-db = pymysql.connect(
-    host = DATABASE_DEFAULT_ADDRESS,
-    port = DATABASE_DEFAULT_PORT,
-    user = DATABASE_DEFAULT_USER,
-    password = DATABASE_DEFAULT_PASSWORD,
-    database = DATABASE_DEFAULT_DATABASE,
-    charset='utf8'
-    )
-cursor = db.cursor()
 class LogMixEvent(object):
     def __init__(
             self,
@@ -134,6 +99,9 @@ def event_sync():
         sqlSearchMixer = "select * from contract where conType = %s"
         MIXERTYPE = "mixer"
         mixer_addr = ""
+        mysql_pool = MysqlPool()
+        db = mysql_pool.conn()
+        cursor = db.cursor()
         while tag:
             db.ping(reconnect=True)
             cursor.execute(sqlSearchMixer, [MIXERTYPE])

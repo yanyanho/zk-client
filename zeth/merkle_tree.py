@@ -4,26 +4,20 @@
 
 from __future__ import annotations
 
+from commands.mysql_pool import MysqlPool
 from zeth.mimc import MiMC7
 from os.path import exists, dirname, abspath
 import json
 import math
 from typing import Dict, List, Tuple, Iterator, cast, Any
 from commands.constants import DATABASE_DEFAULT_ADDRESS, DATABASE_DEFAULT_PORT, DATABASE_DEFAULT_USER, DATABASE_DEFAULT_PASSWORD, DATABASE_DEFAULT_DATABASE
-import sys
-#sys.path.append('../zkservice/zkserver')
-#sys.path.append('./zkservice/zkserver')
-#from zkserverapp.models import merkletree
 import pymysql
-db = pymysql.connect(
-    host = DATABASE_DEFAULT_ADDRESS,
-    port = DATABASE_DEFAULT_PORT,
-    user = DATABASE_DEFAULT_USER,
-    password = DATABASE_DEFAULT_PASSWORD,
-    database = DATABASE_DEFAULT_DATABASE,
-    charset='utf8'
-    )
+
+
+mysql_pool = MysqlPool()
+db = mysql_pool.conn()
 cursor = db.cursor()
+
 ZERO_ENTRY = bytes.fromhex(
     "0000000000000000000000000000000000000000000000000000000000000000")
 

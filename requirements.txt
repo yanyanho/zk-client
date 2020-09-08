@@ -57,3 +57,4 @@ web3==4.8.2
 websockets==6.0
 wrapt==1.11.2
 ethsnarks==0.0.1
+DBUtils==1.3

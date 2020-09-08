@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: LGPL-3.0+
 import os
 from os.path import join
+
+import solcx
 from solcx import compile_files, set_solc_version
 from zeth.constants import SOL_COMPILER_VERSION
 from zeth.contracts import Interface

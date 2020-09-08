@@ -1,21 +1,20 @@
 from django.shortcuts import render
 from commands.constants import DATABASE_DEFAULT_ADDRESS, DATABASE_DEFAULT_PORT, DATABASE_DEFAULT_USER, DATABASE_DEFAULT_PASSWORD, DATABASE_DEFAULT_DATABASE
+from commands.mysql_pool import MysqlPool
 from commands.zeth_token_deploy import  deploy_asset
 from commands.zeth_deploy import deploy
 from commands.event_sync import event_sync
 import threading
 import pymysql
+from pymysqlpool.pool import Pool
 import re
 BACTYPE = "bac"
 MIXERTYPE = "mixer"
-db = pymysql.connect(
-    host = DATABASE_DEFAULT_ADDRESS,
-    port = DATABASE_DEFAULT_PORT,
-    user = DATABASE_DEFAULT_USER,
-    password = DATABASE_DEFAULT_PASSWORD,
-    database = DATABASE_DEFAULT_DATABASE,
-    charset='utf8'
-    )
+
+
+pool.init()
+db = pool.get_conn()
+
 cursor = db.cursor()
 # Create your views here.
 ownerAddr = "0xf1585b8d0e08a0a00fff662e24d67ba95a438256"
@@ -52,6 +51,9 @@ def create_table():
 def deploy_contract():
     print("check whether existed bac token contract and mixer contract")
     sqlSearchBac = "select * from contract where conType = %s"
+    mysql_pool = MysqlPool()
+    db = mysql_pool.conn()
+    cursor = db.cursor()
     db.ping(reconnect=True)
     cursor.execute(sqlSearchBac, [BACTYPE])
     resultBac = cursor.fetchall()

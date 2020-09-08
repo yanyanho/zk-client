@@ -3,8 +3,10 @@ from os.path import exists
 from typing import List, Tuple
 
 from django.http import JsonResponse
+
 from api.zeth_messages_pb2 import ZethNote
 from commands.constants import USER_DIR, FISCO_ADDRESS_FILE, WALLET_DIR_DEFAULT, ADDRESS_FILE_DEFAULT
+from commands.mysql_pool import MysqlPool
 from commands.utils import load_zeth_address, load_zeth_address_secret, open_wallet, parse_output, \
 	load_zeth_address_public
 from commands.zeth_deploy import deploy
@@ -16,33 +18,15 @@ from commands.zeth_mix import mix
 from commands.zeth_token_approve import token_approve
 from commands.zeth_token_deploy import deploy_asset
 from contract.BAC001 import BAC001
+from python_web3.client.bcosclient import BcosClient
 from python_web3.client.bcoskeypair import BcosKeyPair
 from python_web3.eth_account.account import Account
-
-from commands.constants import USER_DIR, FISCO_ADDRESS_FILE, WALLET_DIR_DEFAULT, ADDRESS_FILE_DEFAULT
-from commands.constants import DATABASE_DEFAULT_ADDRESS, DATABASE_DEFAULT_PORT, DATABASE_DEFAULT_USER, DATABASE_DEFAULT_PASSWORD, DATABASE_DEFAULT_DATABASE
-from python_web3.client.bcosclient import BcosClient
-from django.shortcuts import render
-from api.zeth_messages_pb2 import ZethNote
-import json
-import time
-from django.http import JsonResponse
-from os.path import exists
-from typing import List, Tuple
 from zeth.utils import EtherValue, from_zeth_units
 from zeth.wallet import _ensure_dir
 from zeth.zeth_address import ZethAddressPub
-from . import models
-from .models import merkletree
-import pymysql
-db = pymysql.connect(
-    host = DATABASE_DEFAULT_ADDRESS,
-    port = DATABASE_DEFAULT_PORT,
-    user = DATABASE_DEFAULT_USER,
-    password = DATABASE_DEFAULT_PASSWORD,
-    database = DATABASE_DEFAULT_DATABASE,
-    charset='utf8'
-    )
+
+mysql_pool = MysqlPool()
+db = mysql_pool.conn()
 cursor = db.cursor()
 
 '''
