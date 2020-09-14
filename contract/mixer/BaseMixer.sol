@@ -303,11 +303,13 @@ contract BaseMixer is MerkleTreePos, BAC001Holder {
         // from vk).
         bytes32 expected_hsig = sha256(abi.encodePacked(nfs, vk));
 
-        expected_hsig =  expected_hsig >> 3;
+        //expected_hsig =  expected_hsig >> 3;
+        uint p_mod = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
+        uint expected_hsig_mod =  uint256(expected_hsig) % p_mod;
 
         bytes32 hsig = assemble_hsig(primary_inputs);
         require(
-            expected_hsig == hsig,
+            expected_hsig_mod == uint256(hsig),
             "Invalid hsig: This hsig does not correspond to the hash of vk and the nfs"
         );
     }

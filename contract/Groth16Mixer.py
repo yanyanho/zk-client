@@ -1,6 +1,4 @@
 # template for codegen
-from eth_utils import to_checksum_address
-
 from python_web3.client.bcosclient import (
     BcosClient
 )
