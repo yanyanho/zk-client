@@ -1,4 +1,6 @@
 # template for codegen
+from eth_utils import to_checksum_address
+
 from python_web3.client.bcosclient import (
     BcosClient
 )
@@ -71,14 +73,6 @@ class Groth16Mixer:  # name of abi
     def mix(self, a, b, c, vk, sigma, input, ciphertexts):
         func_name = 'mix'
         args = [a, b, c, vk, sigma, input, ciphertexts]
-        receipt = self.client.sendRawTransactionGetReceipt(self.address, self.contract_abi, func_name, args)
-        outputresult = self.data_parser.parse_receipt_output(func_name, receipt['output'])
-        return outputresult, receipt
-
-    # ------------------------------------------
-    def onBAC001Received(self, , , , ):
-        func_name = 'onBAC001Received'
-        args = [to_checksum_address(), to_checksum_address(), , ]
         receipt = self.client.sendRawTransactionGetReceipt(self.address, self.contract_abi, func_name, args)
         outputresult = self.data_parser.parse_receipt_output(func_name, receipt['output'])
         return outputresult, receipt

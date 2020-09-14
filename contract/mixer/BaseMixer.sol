@@ -301,16 +301,9 @@ contract BaseMixer is MerkleTreePos, BAC001Holder {
         // 3. We re-compute h_sig, re-assemble the expected h_sig and check
         // they are equal (i.e. that h_sig re-assembled was correctly generated
         // from vk).
-        uint256[] memory temp = new uint[](6);
-             temp[0] = uint256(nfs[0]);
-             temp[1] = uint256(nfs[1]);
-             temp[2] = uint256(vk[0]);
-             temp[3] = uint256(vk[1]);
-             temp[4] = uint256(vk[2]);
-             temp[5] = uint256(vk[3]);
-      //  bytes32 expected_hsig = sha256(abi.encodePacked(nfs, vk));
-        bytes32 expected_hsig = bytes32(Poseidon(poseidonAddress).poseidon(temp));
-    //    expected_hsig =  expected_hsig >> 3;
+        bytes32 expected_hsig = sha256(abi.encodePacked(nfs, vk));
+
+        expected_hsig =  expected_hsig >> 3;
 
         bytes32 hsig = assemble_hsig(primary_inputs);
         require(
