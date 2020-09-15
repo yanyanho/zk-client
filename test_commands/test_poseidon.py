@@ -7,6 +7,7 @@
 from ethsnarks.poseidon import poseidon
 
 from contract.Poseidon import Poseidon
+from contract.Test1 import Test1
 from python_web3.client.bcosclient import BcosClient
 
 abi = [{'inputs': [{'internalType': 'uint256', 'name': 'mk_depth', 'type': 'uint256'}, {'internalType': 'address', 'name': 'token', 'type': 'address'}, {'internalType': 'uint256[2]', 'name': 'Alpha', 'type': 'uint256[2]'}, {'internalType': 'uint256[2]', 'name': 'Beta1', 'type': 'uint256[2]'}, {'internalType': 'uint256[2]', 'name': 'Beta2', 'type': 'uint256[2]'}, {'internalType': 'uint256[2]', 'name': 'Delta1', 'type': 'uint256[2]'}, {'internalType': 'uint256[2]', 'name': 'Delta2', 'type': 'uint256[2]'}, {'internalType': 'uint256[]', 'name': 'ABC_coords', 'type': 'uint256[]'}], 'payable': False, 'stateMutability': 'nonpayable', 'type': 'constructor'}, {'anonymous': False, 'inputs': [{'indexed': False, 'internalType': 'string', 'name': 'message', 'type': 'string'}], 'name': 'LogDebug', 'type': 'event'}, {'anonymous': False, 'inputs': [{'indexed': False, 'internalType': 'bytes32', 'name': 'message', 'type': 'bytes32'}], 'name': 'LogDebug', 'type': 'event'}, {'anonymous': False, 'inputs': [{'indexed': False, 'internalType': 'bytes32', 'name': 'root', 'type': 'bytes32'}, {'indexed': False, 'internalType': 'bytes32[2]', 'name': 'nullifiers', 'type': 'bytes32[2]'}, {'indexed': False, 'internalType': 'bytes32[2]', 'name': 'commitments', 'type': 'bytes32[2]'}, {'indexed': False, 'internalType': 'bytes[2]', 'name': 'ciphertexts', 'type': 'bytes[2]'}], 'name': 'LogMix', 'type': 'event'}, {'constant': True, 'inputs': [{'internalType': 'uint256[9]', 'name': 'primary_inputs', 'type': 'uint256[9]'}], 'name': 'assemble_hsig', 'outputs': [{'internalType': 'bytes32', 'name': 'hsig', 'type': 'bytes32'}], 'payable': False, 'stateMutability': 'pure', 'type': 'function'}, {'constant': True, 'inputs': [{'internalType': 'uint256', 'name': 'index', 'type': 'uint256'}, {'internalType': 'uint256[9]', 'name': 'primary_inputs', 'type': 'uint256[9]'}], 'name': 'assemble_nullifier', 'outputs': [{'internalType': 'bytes32', 'name': 'nf', 'type': 'bytes32'}], 'payable': False, 'stateMutability': 'pure', 'type': 'function'}, {'constant': True, 'inputs': [{'internalType': 'uint256[9]', 'name': 'primary_inputs', 'type': 'uint256[9]'}], 'name': 'assemble_public_values', 'outputs': [{'internalType': 'uint256', 'name': 'vpub_in', 'type': 'uint256'}, {'internalType': 'uint256', 'name': 'vpub_out', 'type': 'uint256'}], 'payable': False, 'stateMutability': 'pure', 'type': 'function'}, {'constant': True, 'inputs': [], 'name': 'get_constants', 'outputs': [{'internalType': 'uint256', 'name': 'js_in', 'type': 'uint256'}, {'internalType': 'uint256', 'name': 'js_out', 'type': 'uint256'}, {'internalType': 'uint256', 'name': 'num_inputs', 'type': 'uint256'}], 'payable': False, 'stateMutability': 'pure', 'type': 'function'}, {'constant': False, 'inputs': [{'internalType': 'bytes32', 'name': 'commitment', 'type': 'bytes32'}], 'name': 'insert', 'outputs': [], 'payable': False, 'stateMutability': 'nonpayable', 'type': 'function'}, {'constant': False, 'inputs': [{'internalType': 'uint256[2]', 'name': 'a', 'type': 'uint256[2]'}, {'internalType': 'uint256[4]', 'name': 'b', 'type': 'uint256[4]'}, {'internalType': 'uint256[2]', 'name': 'c', 'type': 'uint256[2]'}, {'internalType': 'uint256[4]', 'name': 'vk', 'type': 'uint256[4]'}, {'internalType': 'uint256', 'name': 'sigma', 'type': 'uint256'}, {'internalType': 'uint256[9]', 'name': 'input', 'type': 'uint256[9]'}, {'internalType': 'bytes[2]', 'name': 'ciphertexts', 'type': 'bytes[2]'}], 'name': 'mix', 'outputs': [], 'payable': True, 'stateMutability': 'payable', 'type': 'function'}, {'constant': True, 'inputs': [], 'name': 'token', 'outputs': [{'internalType': 'address', 'name': '', 'type': 'address'}], 'payable': False, 'stateMutability': 'view', 'type': 'function'}, {'constant': True, 'inputs': [{'internalType': 'address', 'name': 'from', 'type': 'address'}, {'internalType': 'uint256', 'name': 'value', 'type': 'uint256'}, {'internalType': 'bytes', 'name': 'data', 'type': 'bytes'}], 'name': 'tokenFallback', 'outputs': [], 'payable': False, 'stateMutability': 'pure', 'type': 'function'}]
@@ -45,5 +46,29 @@ def deploy() -> None:
     print(contract_result)
 
 
+
+def hash() -> None:
+    print("***********************")
+
+    client = BcosClient()
+    abi = [{"constant": False, "inputs": [{"internalType": "uint256[4]", "name": "vk", "type": "uint256[4]"}, {"internalType": "uint256[2]", "name": "nfs", "type": "uint256[2]"}], "name": "check_mkroot_nullifiers_hsig_append_nullifiers_state", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "payable": False, "stateMutability": "nonpayable", "type": "function"}]
+    bin = "608060405234801561001057600080fd5b50610313806100206000396000f3fe608060405234801561001057600080fd5b506004361061002b5760003560e01c80639cab510014610030575b600080fd5b6100d4600480360360c081101561004657600080fd5b8101908080608001906004806020026040519081016040528092919082600460200280828437600081840152601f19601f820116905080830192505050505050919291929080604001906002806020026040519081016040528092919082600260200280828437600081840152601f19601f82011690508083019250505050505091929192905050506100ea565b6040518082815260200191505060405180910390f35b60006060600260405190808252806020026020018201604052801561011e5781602001602082028038833980820191505090505b5090508260006002811061012e57fe5b602002015160001b8160008151811061014357fe5b6020026020010181815250508260016002811061015c57fe5b602002015160001b8160018151811061017157fe5b60200260200101818152505060006002828660405160200180838051906020019060200280838360005b838110156101b657808201518184015260208101905061019b565b5050505090500182600460200280838360005b838110156101e45780820151818401526020810190506101c9565b50505050905001925050506040516020818303038152906040526040518082805190602001908083835b60208310610231578051825260208201915060208101905060208303925061020e565b6001836020036101000a038019825116818451168082178552505050505050905001915050602060405180830381855afa158015610273573d6000803e3d6000fd5b5050506040513d602081101561028857600080fd5b8101908080519060200190929190505050905060007f30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f000000190506000818360001c816102ce57fe5b069050809450505050509291505056fea265627a7a72315820bf74a6ac9ceb0fa0d11c95916dd42c3e08f27f8a94c9a4169e1f000465c7089164736f6c63430005110032"
+
+    recipient = client.sendRawTransactionGetReceipt("", abi, None, None, bin)
+    hash = recipient['contractAddress']
+    print(f"deploy: poseidon_address={hash}")
+    vk =  [16490016172982318895250255641689678646111655220435163217705828142839516908298,
+    8593322015855684017844372616857311881421231960639692489803116242908250885416,
+    17151891846937580539654540694280270379771514144416415467970132703521725560628,
+    5753342982588249018284459391196328085159940105956096703760156814643156426393
+    ]
+    nf= [5183368789734249374633016313510834427607271590571739629980101256184898118832,9875012179972648051600488252941141048857451706810826586610902358606196865831
+]
+    testContract = Test1(hash)
+    out = testContract.check_mkroot_nullifiers_hsig_append_nullifiers_state(vk,nf)
+
+    print(out)
+
+
 if __name__ == '__main__':
-    deploy()
+    hash()

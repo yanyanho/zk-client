@@ -230,18 +230,12 @@ contract BaseMixer is MerkleTreePos, BAC001Holder {
     // combine them with the nullifier field element
     function assemble_nullifier(
         uint256 index, uint256[nbInputs] memory primary_inputs)
-        public pure
-        returns (bytes32 nf) {
-
+        public pure returns (bytes32 nf) {
         // We first check that the nullifier we want to retrieve exists
         require(
             index < jsIn,
             "nullifier index overflow"
         );
-
-        // We compute the nullifier's residual bits index and check the 1st
-        // f.e. indeed comprises it. See the way the residual bits are ordered
-        // in the extended proof
 //        uint256 nf_bit_index =
 //        2*public_value_length + (1 + index) * packing_residue_length;
 //        require(
@@ -256,12 +250,7 @@ contract BaseMixer is MerkleTreePos, BAC001Holder {
 //            bytes32(primary_inputs[2 + jsOut + nb_hash_digests]);
 //            << (padding_size + nf_bit_index)) >> field_capacity;
 
-        // We offset the nullifier index by the number of values preceding the
-        // nullifiers in the primary inputs: the root (1) and the cms (jsOut)
-        // We retrieve the field element corresponding to the `field_capacity`
-        // most significant bits of nf. We remove the left padding due to
-        // casting `field_capacity` bits into a bytes32. We reassemble nf by
-        // adding the values.
+
 //        uint256 high_bits = uint(
 //            primary_inputs[2 + jsOut + index] << (digest_length - field_capacity));
 
@@ -278,7 +267,7 @@ contract BaseMixer is MerkleTreePos, BAC001Holder {
         uint256[4] memory vk,
         uint256[nbInputs] memory primary_inputs,
         bytes32[jsIn] memory nfs)
-        internal {
+        public returns (uint256 ){
         // 1. We re-assemble the full root digest and check it is in the tree
         require(
            checkRoot(primary_inputs),
@@ -312,6 +301,7 @@ contract BaseMixer is MerkleTreePos, BAC001Holder {
             expected_hsig_mod == uint256(hsig),
             "Invalid hsig: This hsig does not correspond to the hash of vk and the nfs"
         );
+        return  expected_hsig_mod;
     }
 
     function checkRoot(uint256[nbInputs] memory primary_inputs) internal returns (bool){

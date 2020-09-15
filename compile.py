@@ -65,7 +65,7 @@ def compile_mixer() -> Interface:
 
 def compile_token():
 
-    zeth_dir = "/Users/ruanyang/works/snark-project/zeth/zeth/client"
+    zeth_dir = "/Users/ruanyang/works/snark-project/zk-client"
     print("***********", zeth_dir)
     allowed_path = join(
         zeth_dir,
@@ -73,13 +73,13 @@ def compile_token():
     path_to_token = join(
         zeth_dir,
         "contract",
-        "bac/BAC001.sol")
+        "test1.sol")
     # Compilation
     set_solc_version(SOL_COMPILER_VERSION)
     compiled_sol = compile_files([path_to_token], allow_paths=allowed_path)
-    token_interface = compiled_sol[path_to_token + ":BAC001"]
-    fo = open("./contract/bac/abi/BAC001.abi", "w")
-    fo1 = open("./contract/bac/abi/BAC001.bin", "w")
+    token_interface = compiled_sol[path_to_token + ":Test1"]
+    fo = open("./contract/Test1.abi", "w")
+    fo1 = open("./contract/Test1.bin", "w")
     fo.write(str(token_interface["abi"]))
     fo.close()
     fo1.write(str(token_interface["bin"]))
@@ -91,4 +91,4 @@ def compile_token():
 
 
 if __name__ == "__main__":
-    compile_mixer()  # pylint: disable=no-value-for-parameter
+    compile_token()  # pylint: disable=no-value-for-parameter
