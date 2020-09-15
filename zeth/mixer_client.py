@@ -24,6 +24,7 @@ from zeth.utils import EtherValue, get_trusted_setup_dir, \
     get_contracts_dir
 from zeth.prover_client import ProverClient
 from api.zeth_messages_pb2 import ZethNote, JoinsplitInput, ProofInputs
+from zeth.poseidon import poseidon
 
 import os
 import json
@@ -143,7 +144,7 @@ def zeth_note_from_bytes(note_bytes: bytes) -> ZethNote:
     return ZethNote(
         apk=apk.hex(), value=value.hex(), rho=rho.hex(), trap_r=trap_r.hex())
 
-
+'''
 def compute_commitment(zeth_note: ZethNote) -> bytes:
     """
     Used by the recipient of a payment to recompute the commitment and check
@@ -159,8 +160,28 @@ def compute_commitment(zeth_note: ZethNote) -> bytes:
 
     cm_field = int.from_bytes(cm, byteorder="big") % constants.ZETH_PRIME
     return cm_field.to_bytes(int(constants.DIGEST_LENGTH/8), byteorder="big")
+'''
+def compute_commitment(zeth_note: ZethNote) -> bytes:
+    """
+    Used by the recipient of a payment to recompute the commitment and check
+    the membership in the tree to confirm the validity of a payment
+    """
+    # inner_k = poseidon(r || a_pk[:94] || rho[:94] || v)
+    inputs = []
+    inputs.append(int.from_bytes(bytes.fromhex(zeth_note.trap_r)), byteorder="big")
+    apk = digest_to_binary_string(bytes.fromhex(zeth_note.apk))
+    first_94bits_apk = apk[:94]
+    rho = digest_to_binary_string(bytes.fromhex(zeth_note.rho))
+    first_94bits_rho = rho[:94]
+    value = digest_to_binary_string(bytes.fromhex(zeth_note.value))
+    left_leg_bin = first_94bits_apk + first_94bits_rho + value
+    left_leg = int(left_leg_bin, 2)
+    inputs.append(left_leg)
 
+    cm_field = poseidon(inputs).to_bytes(32, byteorder="big")
+    return cm_field
 
+'''
 def compute_nullifier(
         zeth_note: ZethNote,
         spending_authority_ask: OwnershipSecretKey) -> bytes:
@@ -175,7 +196,29 @@ def compute_nullifier(
     blake_hash.update(left_leg)
     blake_hash.update(bytes.fromhex(zeth_note.rho))
     return blake_hash.digest()
-
+'''
+def compute_nullifier(
+        zeth_note: ZethNote,
+        spending_authority_ask: OwnershipSecretKey) -> bytes:
+    """
+    Returns nf = poseidon(1010 || [a_sk]_250 || rho)
+    """
+    binary_a_sk = digest_to_binary_string(spending_authority_ask)
+    index : int = 0
+    for i in binary_a_sk:
+        if i == "0":
+            index= index+1
+        else:
+            break
+    non_zero_a_sk = binary_a_sk[index:]
+    a_sk_254 = non_zero_a_sk.zfill(254)
+    first_250bits_ask = a_sk_254[:250]
+    left_leg_bin = "1010" + first_250bits_ask
+    left_leg = int(left_leg_bin, 2)
+    inputs = []
+    inputs.append(left_leg)
+    inputs.append(int.from_bytes(bytes.fromhex(zeth_note.rho), byteorder="big"))
+    return poseidon(inputs).to_bytes(32, byteorder="big")
 
 def create_joinsplit_input(
         merkle_path: List[str],
@@ -202,8 +245,11 @@ def write_verification_key(vk_json: GenericVerificationKey) -> None:
 
 
 def get_dummy_rho() -> str:
-    assert (constants.RHO_LENGTH_BYTES << 3) == constants.RHO_LENGTH
-    return bytes(Random.get_random_bytes(constants.RHO_LENGTH_BYTES)).hex()
+    #assert (constants.RHO_LENGTH_BYTES << 3) == constants.RHO_LENGTH
+    rho_bytes = bytes(Random.get_random_bytes(constants.RHO_LENGTH_BYTES))
+    rho_int = int.from_bytes(rho_bytes, byteorder="big") % constants.ZETH_PRIME
+    return rho_int.to_bytes(32, byteorder="big").hex()
+    #return bytes(Random.get_random_bytes(constants.RHO_LENGTH_BYTES)).hex()
 
 
 def get_dummy_input_and_address(
@@ -679,7 +725,7 @@ def joinsplit_sign(
     #print("message digest: ", message_digest)
     return signing.sign(signing_keypair.sk, message_digest)
 
-
+'''
 def compute_h_sig(
         nf0: bytes,
         nf1: bytes,
@@ -693,14 +739,41 @@ def compute_h_sig(
     h.update(nf1)
     h.update(signing.encode_vk_to_bytes(sign_vk))
     return h.digest()
-
+'''
+def compute_h_sig(
+        nf0: bytes,
+        nf1: bytes,
+        sign_vk: JoinsplitSigVerificationKey) -> bytes:
+    """
+    Compute h_sig = sha256(nf0 || nf1 || sign_vk)
+    Flatten the verification key
+    """
+    h = sha256()
+    h.update(nf0)
+    print("nf0: ", int.from_bytes(nf0, byteorder="big"))
+    h.update(nf1)
+    print("nf1: ", int.from_bytes(nf1, byteorder="big"))
+    h.update(signing.encode_vk_to_bytes(sign_vk))
+    print("sign_vk: ")
+    print(int(sign_vk.ppk[0]))
+    print(int(sign_vk.ppk[1]))
+    print(int(sign_vk.spk[0]))
+    print(int(sign_vk.spk[1]))
+    result = h.digest()
+    print("digest result: ", int.from_bytes(result, byteorder="big"))
+    result_int = int.from_bytes(result, byteorder="big") % constants.ZETH_PRIME
+    print("module result: ", result_int)
+    return result_int.to_bytes(32, byteorder="big")
 
 def trap_r_randomness() -> str:
     """
     Compute randomness `r`
     """
-    assert (constants.TRAPR_LENGTH_BYTES << 3) == constants.TRAPR_LENGTH
-    return bytes(Random.get_random_bytes(constants.TRAPR_LENGTH_BYTES)).hex()
+    #assert (constants.TRAPR_LENGTH_BYTES << 3) == constants.TRAPR_LENGTH
+    trap_r_bytes = bytes(Random.get_random_bytes(constants.TRAPR_LENGTH_BYTES))
+    trap_r_int = int.from_bytes(trap_r_bytes, byteorder="big") % constants.ZETH_PRIME
+    return trap_r_int.to_bytes(32, byteorder="big").hex()
+    #return bytes(Random.get_random_bytes(constants.TRAPR_LENGTH_BYTES)).hex()
 
 
 def public_inputs_extract_public_values(
@@ -717,7 +790,7 @@ def public_inputs_extract_public_values(
         (residual >> constants.PUBLIC_VALUE_LENGTH) & constants.PUBLIC_VALUE_MASK
     return (v_in, v_out)
 
-
+'''
 def _compute_rho_i(phi: str, hsig: bytes, i: int) -> bytes:
     """
     Returns rho_i = blake2s(0 || i || 10 || [phi]_252 || hsig)
@@ -738,10 +811,39 @@ def _compute_rho_i(phi: str, hsig: bytes, i: int) -> bytes:
     blake_hash.update(int(left_leg_bin, 2).to_bytes(32, byteorder='big'))
     blake_hash.update(hsig)
     return blake_hash.digest()
+'''
+def _compute_rho_i(phi: str, hsig: bytes, i: int) -> bytes:
+    """
+    Returns rho_i = poseidon(0 || i || 10 || [phi]_250 || hsig)
+    See: Zcash protocol spec p. 57, Section 5.4.2 Pseudo Random Functions
+    """
+    # [SANITY CHECK] make sure i is in the interval [0, JS_INPUTS]. For now,
+    # this code also relies on JS_INPUTS being <= 2.
+    assert i < constants.JS_INPUTS
+    assert constants.JS_INPUTS <= 2, \
+        "function needs updating to support JS_INPUTS > 2"
 
+    # Append PRF^{rho} tag to a_sk
+    binary_phi = hex_digest_to_binary_string(phi)
+    index : int = 0
+    for i in binary_phi:
+        if i == "0":
+            index= index+1
+        else:
+            break
+    non_zero_phi = binary_phi[index:]
+    phi_254 = non_zero_phi.zfill(254)
+    first_250bits_phi = phi_254[:250]
+    left_leg_bin = "0" + str(i) + "10" + first_250bits_phi
+    inputs = []
+    inputs.append(int(left_leg_bin, 2))
+    inputs.append(int.from_bytes(hsig, byteorder="big"))
+    return poseidon(inputs).to_bytes(32, byteorder="big")
 
 def _phi_randomness() -> str:
     """
     Compute the transaction randomness "phi", used for computing the new rhoS
     """
-    return bytes(Random.get_random_bytes(constants.PHI_LENGTH_BYTES)).hex()
+    phi_bytes = bytes(Random.get_random_bytes(constants.PHI_LENGTH_BYTES))
+    phi_int = int.from_bytes(phi_bytes, byteorder="big") % constants.ZETH_PRIME
+    return phi_int.to_bytes(32, byteorder="big").hex()

@@ -51,9 +51,6 @@ def create_table():
 def deploy_contract():
     print("check whether existed bac token contract and mixer contract")
     sqlSearchBac = "select * from contract where conType = %s"
-    mysql_pool = MysqlPool()
-    db = mysql_pool.conn()
-    cursor = db.cursor()
     db.ping(reconnect=True)
     cursor.execute(sqlSearchBac, [BACTYPE])
     resultBac = cursor.fetchall()
@@ -69,7 +66,8 @@ def deploy_contract():
         else:
             token_address = resultBac[0][2]
             print("deploy mixer contract on bac token contract of: ", token_address)
-            mixer_address = deploy(token_address)
+            poseidon_address = deployPoseidon()
+            mixer_address = deploy(token_address, poseidon_address)
             if mixer_address:
                 print("save mixer contract to database, address: ", mixer_address)
                 sqlInsertMixer = "insert into contract (conName, conType, conAddr, owner, totalAmount, shortName) values (%s, %s, %s, %s, %s, %s);"
@@ -90,7 +88,8 @@ def deploy_contract():
             cursor.execute(sqlInsertBac, [conName, BACTYPE, token_address, ownerAddr, totalAmount, shortName])
             db.commit()
             print("deploy mixer contract on bac token contract of: ", token_address)
-            mixer_address = deploy(token_address)
+            poseidon_address = deployPoseidon()
+            mixer_address = deploy(token_address, poseidon_address)
             if mixer_address:
                 print("save mixer contract to database, address: ", mixer_address)
                 sqlInsertMixer = "insert into contract (conName, conType, conAddr, owner, totalAmount, shortName) values (%s, %s, %s, %s, %s, %s);"

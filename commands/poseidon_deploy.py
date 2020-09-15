@@ -9,9 +9,7 @@ from zeth.mixer_client import MixerClient
 from zeth.utils import EtherValue
 '''
 
-from ethsnarks.poseidon import poseidon
-
-from contract.Poseidon import Poseidon
+from zeth.poseidon import poseidon
 from python_web3.client.bcosclient import BcosClient
 
 
@@ -29,12 +27,7 @@ def deployPoseidon() :
 
     mixerTransactionRecipient = client.sendRawTransactionGetReceipt("", abi, None, None, bin)
     poseidon_address = mixerTransactionRecipient['contractAddress']
-    print(f"deploy: mixer_address={poseidon_address}")
-    inputs = [1, 2]
-    python_result = poseidon(inputs)
-    # print(python_result)
-    poseidonContract = Poseidon(poseidon_address)
-    contract_result = poseidonContract.poseidon(inputs)
+    print(f"deploy: poseidon_address={poseidon_address}")
     # print(contract_result)
 
     return poseidon_address
