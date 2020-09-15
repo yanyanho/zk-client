@@ -7,10 +7,11 @@
 from __future__ import annotations
 
 from zeth.utils import hex_extend_32bytes, digest_to_binary_string, encode_abi
-
+import zeth.constants as constants
 from Crypto import Random
 from hashlib import blake2s
 from typing import NewType
+from zeth.poseidon import poseidon
 
 
 # Secret key for proving ownership
@@ -51,14 +52,21 @@ def ownership_secret_key_from_hex(key_hex: str) -> OwnershipSecretKey:
     """
     return OwnershipSecretKey(bytes.fromhex(key_hex))
 
-
+'''
 def gen_ownership_keypair() -> OwnershipKeyPair:
     a_sk = OwnershipSecretKey(Random.get_random_bytes(32))
     a_pk = _derive_a_pk(a_sk)
     keypair = OwnershipKeyPair(a_sk, a_pk)
     return keypair
-
-
+'''
+def gen_ownership_keypair() -> OwnershipKeyPair:
+    a_sk_bytes = OwnershipSecretKey(Random.get_random_bytes(32))
+    a_sk_int = int.from_bytes(a_sk_bytes, byteorder="big") % constants.ZETH_PRIME
+    a_sk = a_sk_int.to_bytes(32, byteorder="big")
+    a_pk = _derive_a_pk(a_sk)
+    keypair = OwnershipKeyPair(a_sk, a_pk)
+    return keypair
+'''
 def _derive_a_pk(a_sk: OwnershipSecretKey) -> OwnershipPublicKey:
     """
     Returns a_pk = blake2s(1100 || [a_sk]_252 || 0^256)
@@ -73,4 +81,27 @@ def _derive_a_pk(a_sk: OwnershipSecretKey) -> OwnershipPublicKey:
             ["bytes32", "bytes32"],
             [bytes.fromhex(left_leg_hex), bytes.fromhex(zeroes)])
     ).digest()
+    return OwnershipPublicKey(a_pk)
+'''
+def _derive_a_pk(a_sk: OwnershipSecretKey) -> OwnershipPublicKey:
+    """
+    Returns a_pk = blake2s(1100 || [a_sk]_250 || 0^254)
+    """
+    inputs = []
+    binary_a_sk = digest_to_binary_string(a_sk)
+    index : int = 0
+    for i in binary_a_sk:
+        if i == "0":
+            index= index+1
+        else:
+            break
+    non_zero_a_sk = binary_a_sk[index:]
+    a_sk_254 = non_zero_a_sk.zfill(254)
+    first_250bits_ask = a_sk_254[:250]
+    left_leg_bin = "0010" + first_250bits_ask
+    left_leg = int(left_leg_bin, 2)
+    zeroes = 0
+    inputs.append(left_leg)
+    inputs.append(zeroes)
+    a_pk = poseidon(inputs).to_bytes(32, byteorder="big")
     return OwnershipPublicKey(a_pk)

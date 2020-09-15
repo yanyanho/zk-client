@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from commands.mysql_pool import MysqlPool
 from zeth.mimc import MiMC7
+from zeth.poseidon import poseidon
 from os.path import exists, dirname, abspath
 import json
 import math
@@ -93,11 +94,20 @@ class MerkleTree:
         assert pow(2, depth) == num_leaves, f"Non-pow-2 size {num_leaves} given"
         return MerkleTree.empty_with_depth(depth)
 
-    @staticmethod
+    '''
     def combine(left: bytes, right: bytes) -> bytes:
         result_i = HASH.mimc_mp(
             int.from_bytes(left, byteorder='big'),
             int.from_bytes(right, byteorder='big'))
+        return result_i.to_bytes(32, byteorder='big')
+    '''
+
+    @staticmethod
+    def combine(left: bytes, right: bytes) -> bytes:
+        inputs = []
+        inputs.append(int.from_bytes(left, byteorder='big'))
+        inputs.append(int.from_bytes(right, byteorder='big'))
+        result_i = poseidon(inputs)
         return result_i.to_bytes(32, byteorder='big')
 
     def get_num_entries(self) -> int:
