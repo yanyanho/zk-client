@@ -168,7 +168,7 @@ def compute_commitment(zeth_note: ZethNote) -> bytes:
     """
     # inner_k = poseidon(r || a_pk[:94] || rho[:94] || v)
     inputs = []
-    inputs.append(int.from_bytes(bytes.fromhex(zeth_note.trap_r)), byteorder="big")
+    inputs.append(int.from_bytes(bytes.fromhex(zeth_note.trap_r), byteorder="big"))
     apk = digest_to_binary_string(bytes.fromhex(zeth_note.apk))
     first_94bits_apk = apk[:94]
     rho = digest_to_binary_string(bytes.fromhex(zeth_note.rho))
@@ -177,7 +177,6 @@ def compute_commitment(zeth_note: ZethNote) -> bytes:
     left_leg_bin = first_94bits_apk + first_94bits_rho + value
     left_leg = int(left_leg_bin, 2)
     inputs.append(left_leg)
-
     cm_field = poseidon(inputs).to_bytes(32, byteorder="big")
     return cm_field
 
@@ -217,6 +216,7 @@ def compute_nullifier(
     left_leg = int(left_leg_bin, 2)
     inputs = []
     inputs.append(left_leg)
+
     inputs.append(int.from_bytes(bytes.fromhex(zeth_note.rho), byteorder="big"))
     return poseidon(inputs).to_bytes(32, byteorder="big")
 

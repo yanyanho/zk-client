@@ -191,7 +191,8 @@ contract BaseMixer is MerkleTreePos, BAC001Holder {
         // in and remove any extra bits (due to the padding)
 
         uint256 residual_bits = primary_inputs[2 + jsOut + nb_hash_digests];
-        residual_bits = residual_bits >> residual_hash_bits;
+        //residual_hash_bits =15
+       // residual_bits = residual_bits >> residual_hash_bits;
         vpub_out = uint256(uint64(residual_bits)) * public_unit_value_wei;
         vpub_in = uint256(uint64(residual_bits >> public_value_length)) *
             public_unit_value_wei;
