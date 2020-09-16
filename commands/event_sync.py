@@ -84,7 +84,6 @@ class EventCallbackImpl(EventCallbackHandler):
         for wallet in make_wallet(mid, next_addr):
             # received_notes
             wallet.receive_notes(mix_result.output_events)
-            print("receiver *********")
             spent_commits = wallet.mark_nullifiers_used(mix_result.nullifiers)
             for commit in spent_commits:
                 print(f"{wallet.username} spent commits:  {commit}")
