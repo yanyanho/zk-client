@@ -21,4 +21,5 @@ zkclient/settings.py
 *.keystore
 env/src
 vk.json
+.DS_Store
 
