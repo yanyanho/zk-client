@@ -4,16 +4,14 @@
 
 from __future__ import annotations
 
+import json
+import math
+from os.path import exists
+from typing import Dict, List, Tuple, Iterator, cast, Any
+
 from commands.mysql_pool import MysqlPool
 from zeth.mimc import MiMC7
 from zeth.poseidon import poseidon
-from os.path import exists, dirname, abspath
-import json
-import math
-from typing import Dict, List, Tuple, Iterator, cast, Any
-from commands.constants import DATABASE_DEFAULT_ADDRESS, DATABASE_DEFAULT_PORT, DATABASE_DEFAULT_USER, DATABASE_DEFAULT_PASSWORD, DATABASE_DEFAULT_DATABASE
-import pymysql
-
 
 mysql_pool = MysqlPool()
 db = mysql_pool.conn()

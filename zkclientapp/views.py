@@ -1,19 +1,18 @@
+from DBUtils.PooledDB import PooledDB,SharedDBConnection
 from django.shortcuts import render
 from commands.constants import DATABASE_DEFAULT_ADDRESS, DATABASE_DEFAULT_PORT, DATABASE_DEFAULT_USER, DATABASE_DEFAULT_PASSWORD, DATABASE_DEFAULT_DATABASE
 from commands.mysql_pool import MysqlPool
+from commands.poseidon_deploy import deployPoseidon
 from commands.zeth_token_deploy import  deploy_asset
 from commands.zeth_deploy import deploy
 from commands.event_sync import event_sync
 import threading
 import pymysql
-from pymysqlpool.pool import Pool
-import re
 BACTYPE = "bac"
 MIXERTYPE = "mixer"
 
-
-pool.init()
-db = pool.get_conn()
+mysql_pool = MysqlPool()
+db = mysql_pool.conn()
 
 cursor = db.cursor()
 # Create your views here.

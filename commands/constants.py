@@ -8,7 +8,7 @@ Constants and defaults specific to the CLI interface.
 """
 
 FISCO_RPC_ENDPOINT_DEFAULT = "http://119.23.46.126:8545"
-PROVER_SERVER_ENDPOINT_DEFAULT = "116.85.72.123:50051"
+PROVER_SERVER_ENDPOINT_DEFAULT = "139.159.183.1:50051"
 
 FISCO_ADDRESS_FILE = "fisco_account.keystore"
 ADDRESS_FILE_DEFAULT = "zeth-address.json"

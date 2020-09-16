@@ -3,8 +3,8 @@ import sys
 import time
 from typing import List
 
-from commands.mysql_pool import MysqlPool
 from commands.constants import USER_DIR, WALLET_DIR_DEFAULT
+from commands.mysql_pool import MysqlPool
 from commands.utils import load_zeth_address
 from python_web3.client.bcosclient import BcosClient
 from python_web3.client.datatype_parser import DatatypeParser
@@ -100,16 +100,16 @@ def event_sync():
         MIXERTYPE = "mixer"
         mixer_addr = ""
         mysql_pool = MysqlPool()
-        db = mysql_pool.conn()
+        db = mysql_pool.steady_connection()
         cursor = db.cursor()
         while tag:
-            db.ping(reconnect=True)
+            # db.ping(reconnect=True)
             cursor.execute(sqlSearchMixer, [MIXERTYPE])
             resultMixer = cursor.fetchall()
             db.commit()
             if resultMixer:
                 tag = False
-                mixer_addr = resultMixer[0][2]
+                mixer_addr = resultMixer[0]['conAddr']
                 print("found mixer contract: ", mixer_addr)
             else:
                 print("could not find mixer contract, waiting...")
