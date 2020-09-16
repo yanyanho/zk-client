@@ -826,8 +826,8 @@ def _compute_rho_i(phi: str, hsig: bytes, i: int) -> bytes:
     # Append PRF^{rho} tag to a_sk
     binary_phi = hex_digest_to_binary_string(phi)
     index : int = 0
-    for i in binary_phi:
-        if i == "0":
+    for k in binary_phi:
+        if k == "0":
             index= index+1
         else:
             break
