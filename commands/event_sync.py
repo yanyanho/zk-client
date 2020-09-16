@@ -124,7 +124,7 @@ def event_sync():
             address = cn.get_last(contractname)
             print("hex address :", address)
             '''
-        abifile = "contract/Groth16Mixer.abi"
+        abifile = "contract/mixer/abi/Groth16Mixer.abi"
         abiparser = DatatypeParser(abifile)
         eventcallback = EventCallbackImpl()
         eventcallback.abiparser = abiparser
@@ -134,7 +134,7 @@ def event_sync():
         cursor.execute(sqlSearch)
         results = cursor.fetchall()
         if results:
-            blockNumber = results[-1][2]
+            blockNumber = results[-1]['blockNumber']
         print("blockNumber: ", blockNumber)
         result = bcos_event.register_eventlog_filter(
             eventcallback, abiparser, [mixer_addr], "LogMix", indexed_value, str(blockNumber+1))

@@ -82,8 +82,8 @@ contract Groth16Mixer is BaseMixer {
 
         // 1. Check the root and the nullifiers
         bytes32[jsIn] memory nullifiers;
-        check_mkroot_nullifiers_hsig_append_nullifiers_state(
-            vk, input, nullifiers);
+//        check_mkroot_nullifiers_hsig_append_nullifiers_state(
+//            vk, input, nullifiers);
 
         // 2.a Verify the signature on the hash of data_to_be_signed
         bytes32 hash_to_be_signed = sha256(

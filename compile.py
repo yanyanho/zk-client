@@ -51,14 +51,17 @@ def compile_mixer() -> Interface:
     compiled_sol = compile_files([path_to_token], allow_paths=os.path.abspath('.').join("contract"))
     mixer_interface = compiled_sol[path_to_token + ":Groth16Mixer"]
     fo = open("./contract/mixer/abi/Groth16Mixer.abi", "w")
+    fo0 = open("./contract/mixer/abi/Groth16Mixer1.abi", "w")
     fo1 = open("./contract/mixer/abi/Groth16Mixer.bin", "w")
     s1 = str(mixer_interface["abi"])
+    origin = str(mixer_interface["abi"])
     s2 = s1.replace('True','true')
     s3 = s2.replace('False','false')
     s4 = s3.replace('\'','\"')
 
     fo.write(s4)
     fo.close()
+    fo0.write(origin)
     fo1.write(str(mixer_interface["bin"]))
     fo1.close()
 
@@ -91,4 +94,4 @@ def compile_token():
 
 
 if __name__ == "__main__":
-    compile_token()  # pylint: disable=no-value-for-parameter
+    compile_mixer()  # pylint: disable=no-value-for-parameter
