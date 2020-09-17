@@ -89,6 +89,7 @@ def create_zeth_notes(
         trap_r=trap_r0)
 
     rho1 = _compute_rho_i(phi, hsig, 1)
+    print("rho1: ", rho1.hex())
     trap_r1 = trap_r_randomness()
     note1 = ZethNote(
         apk=ownership_key_as_hex(recipient1),
@@ -172,9 +173,9 @@ def compute_commitment(zeth_note: ZethNote) -> bytes:
     apk = digest_to_binary_string(bytes.fromhex(zeth_note.apk))
     first_94bits_apk = apk[:94]
     rho = digest_to_binary_string(bytes.fromhex(zeth_note.rho))
-    first_96bits_rho = rho[:96]
+    first_94bits_rho = rho[:96]
     value = digest_to_binary_string(bytes.fromhex(zeth_note.value))
-    left_leg_bin = first_94bits_apk + first_96bits_rho + value + "00"
+    left_leg_bin = first_94bits_apk + first_94bits_rho + value + "00"
     left_leg = int(left_leg_bin, 2)
     inputs.append(left_leg)
     cm_field = poseidon(inputs).to_bytes(32, byteorder="big")
@@ -478,7 +479,8 @@ class MixerClient:
         mk_paths = []
         for mk_tree in mk_trees:
             mk_roots.append(mk_tree.get_root())
-        print("merkle_roots: ", mk_roots)
+        print("merkle_root0: ", mk_roots[0].hex())
+        print("merkle_root1: ", mk_roots[1].hex())
         mk_paths.append(compute_merkle_path(inputs[0][0], mk_trees[0]))
         mk_paths.append(compute_merkle_path(inputs[1][0], mk_trees[1]))
         #mk_paths = [compute_merkle_path(addr, mk_tree) for addr, _ in inputs]
