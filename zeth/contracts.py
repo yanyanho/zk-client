@@ -226,6 +226,8 @@ def _create_web3_mixer_call(
         mixer_instance: Any,
         mix_parameters: MixParameters) -> Any:
     mix_params_eth = mix_parameters_as_contract_arguments(zksnark, mix_parameters)
+    # outputresult, receipt = mixer_instance.check_mkroot_nullifiers_hsig_append_nullifiers_state(mix_params_eth[3],mix_params_eth[5], [b'', b''])
+    # print("*********$",outputresult, receipt['status'])
     return mixer_instance.mix(*mix_params_eth)
 
 '''
