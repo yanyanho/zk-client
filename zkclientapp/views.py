@@ -63,7 +63,7 @@ def deploy_contract():
             print("all contract existed")
             return
         else:
-            token_address = resultBac[0][2]
+            token_address = resultBac[0]['conAddr']
             print("deploy mixer contract on bac token contract of: ", token_address)
             poseidon_address = deployPoseidon()
             mixer_address = deploy(token_address, poseidon_address)

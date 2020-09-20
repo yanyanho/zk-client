@@ -171,9 +171,9 @@ def compute_commitment(zeth_note: ZethNote) -> bytes:
     inputs = []
     inputs.append(int.from_bytes(bytes.fromhex(zeth_note.trap_r), byteorder="big"))
     apk = digest_to_binary_string(bytes.fromhex(zeth_note.apk))
-    first_94bits_apk = apk[:94]
+    first_94bits_apk = apk[2:96]
     rho = digest_to_binary_string(bytes.fromhex(zeth_note.rho))
-    first_94bits_rho = rho[:96]
+    first_94bits_rho = rho[2:96]
     value = digest_to_binary_string(bytes.fromhex(zeth_note.value))
     left_leg_bin = first_94bits_apk + first_94bits_rho + value + "00"
     left_leg = int(left_leg_bin, 2)
