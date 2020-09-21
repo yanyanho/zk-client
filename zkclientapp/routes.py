@@ -505,20 +505,20 @@ def getContract(request) -> None:
 	resultbac = results[0]
 	resultmixer = results[1]
 	bacContract = {
-		"contractName": resultbac[0],
-		"contractType": resultbac[1],
-		"contractAddr": resultbac[2],
-		"ownerAddr": resultbac[3],
-		"totalAmount": resultbac[4],
-		"shortName": resultbac[5],
+		"contractName": resultbac['conName'],
+		"contractType": resultbac['conType'],
+		"contractAddr": resultbac['conAddr'],
+		"ownerAddr": resultbac['owner'],
+		"totalAmount": resultbac['totalAmount'],
+		"shortName": resultbac['shortName'],
 	}
 	mixerContract = {
-		"contractName": resultmixer[0],
-		"contractType": resultmixer[1],
-		"contractAddr": resultmixer[2],
-		"ownerAddr": resultmixer[3],
-		"totalAmount": resultmixer[4],
-		"shortName": resultmixer[5],
+		"contractName": resultmixer['conName'],
+		"contractType": resultmixer['conType'],
+		"contractAddr": resultmixer['conAddr'],
+		"ownerAddr": resultmixer['owner'],
+		"totalAmount": resultmixer['totalAmount'],
+		"shortName": resultmixer['shortName'],
 	}
 	result['contracts'] = {
 		"bacContract": bacContract,
