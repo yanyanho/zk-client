@@ -5,6 +5,9 @@
 # SPDX-License-Identifier: LGPL-3.0+
 
 from __future__ import annotations
+
+import time
+
 from zeth.signing import SigningVerificationKey, Signature, \
     verification_key_as_mix_parameter, verification_key_from_mix_parameter, \
     signature_as_mix_parameter, signature_from_mix_parameter
@@ -225,10 +228,14 @@ def _create_web3_mixer_call(
         zksnark: IZKSnarkProvider,
         mixer_instance: Any,
         mix_parameters: MixParameters) -> Any:
+    start = time.time()
     mix_params_eth = mix_parameters_as_contract_arguments(zksnark, mix_parameters)
     # outputresult, receipt = mixer_instance.check_mkroot_nullifiers_hsig_append_nullifiers_state(mix_params_eth[3],mix_params_eth[5], [b'', b''])
     # print("*********$",outputresult, receipt['status'])
-    return mixer_instance.mix(*mix_params_eth)
+    result = mixer_instance.mix(*mix_params_eth)
+    end = time.time()
+    print("****to blockchain time:", end- start)
+    return result
 
 '''
 def mix_call(

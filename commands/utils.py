@@ -3,6 +3,9 @@
 # SPDX-License-Identifier: LGPL-3.0+
 
 from __future__ import annotations
+
+import time
+
 from commands.constants import FISCO_ADDRESS_FILE, USER_DIR, ADDRESS_FILE_DEFAULT, WALLET_DIR_DEFAULT
 from zeth.zeth_address import ZethAddressPub, ZethAddressPriv, ZethAddress
 from zeth.contracts import \
@@ -271,6 +274,7 @@ def create_zeth_client_and_mixer_desc(
     with open(keystore_file, "r") as dump_f:
         keytext = json.load(dump_f)
         privkey = Account.decrypt(keytext, password)
+        # todo cost 1S
         mixer_instance.client.ecdsa_account = Account.from_key(privkey)
         keypair = BcosKeyPair()
         keypair.private_key = mixer_instance.client.ecdsa_account.privateKey
