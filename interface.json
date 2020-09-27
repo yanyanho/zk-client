@@ -1,18 +1,31 @@
 [
    {
-    "description": "checkUser",
+    "description": "getContract",
     "request": {
-      "method": "POST",
-      "uri": "/checkUser",
-      "body": {
-        "username": "hehe",
-        "password": "123456"
-      }
+      "method": "GET",
+      "uri": "/getContract"
     },
-    "response": {
-      "status": 0,
-      "privatekey": "0x3fa34c3f31a42c65c4c7056d05d3130f4d0d29bba81266de06b79be3cf80740e"
-    }
+    "response":   {
+    "contracts": {
+        "bacContract": {
+            "contractName": "BAC001",
+            "contractType": "bac",
+            "contractAddr": "0x24c945fc747b1a5a228765a3d985b9a12ebe8e1c",
+            "ownerAddr": "0xf1585b8d0e08a0a00fff662e24d67ba95a438256",
+            "totalAmount": 50000000000,
+            "shortName": "zk-AAA-demo"
+        },
+        "mixerContract": {
+            "contractName": "Groth16Mixer",
+            "contractType": "mixer",
+            "contractAddr": "0xfdfec928bec8c5e3aa0d93f08c4440b36842bc50",
+            "ownerAddr": "0xf1585b8d0e08a0a00fff662e24d67ba95a438256",
+            "totalAmount": 0,
+            "shortName": "mixer_test"
+        }
+    },
+    "status": 0
+}
   },
   {
     "description": "checkUser",
