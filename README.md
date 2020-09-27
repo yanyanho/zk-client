@@ -213,14 +213,14 @@ python manage.py runserver 0.0.0.0:5002
   13 解析event事件  
    emit LogMix(mid,new_merkle_root,nullifiers,commitments,ciphertexts); 
    
-   1 获取commit,更新merkel树
-   2 用自己私钥解密ciphertexts，解出来即自己的note
-   3 计算note的commit
-   inner_k = poseidon(r || a_pk[:94] || rho[:94] || v)
-   检查跟event的commit跟本地算的是否一致
-   4 检查nullifier
-    Returns nf = poseidon(1010 || [a_sk]_250 || rho)
-    将note信息存入note_{username}文件
+   1 获取commit,更新merkel树  
+   2 用自己私钥解密ciphertexts，解出来即自己的note  
+   3 计算note的commit  
+   inner_k = poseidon(r || a_pk[:94] || rho[:94] || v)  
+   检查跟event的commit跟本地算的是否一致  
+   4 检查nullifier  
+    Returns nf = poseidon(1010 || [a_sk]_250 || rho)  
+    将note信息存入note_{username}文件  
   ```  
     {
         "note": {
