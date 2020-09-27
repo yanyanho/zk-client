@@ -60,7 +60,7 @@ python manage.py runserver 0.0.0.0:5002
  针对每笔utxo对应一个commit（即utxo的hash），nullifer为作废的commit。  
  #### 1.3.1 基本概念：
  - 匿名地址：
-   每个用户又一个地址
+   每个用户有一个地址
 ``` 
    0874eff170f7036b7cd4f7a95951d8efd7a42fe831b3bf9a6e4baeb22da6e2b5:ef4485c99d6f719631184c1d57db3658d2c9abfbc46e9be0026e8aadf154af21 
    第一段为apk接受地址  
@@ -84,16 +84,16 @@ python manage.py runserver 0.0.0.0:5002
     compute_commitment
     inner_k = blake2s(r || a_pk || rho || V)
     
-  -  rho:
+  -  rho:  
     Returns rho_i = blake2s(0 || i || 10 || [phi]_252 || hsig）
     
-   - 针对commit的nullifier:
-    nullifier:
-    Returns nf = blake2s(1110 || [a_sk]_252 || rho)
+   - 针对commit的nullifier:  
+    nullifier:    
+    Returns nf = blake2s(1110 || [a_sk]_252 || rho)  
     
-   - hsig：关联nullifier和commit
-     hsig:
-    Compute h_sig = sha256(nf0 || nf1 || sign_vk)
+   - hsig：关联nullifier和commit  
+     hsig:    
+    Compute h_sig = sha256(nf0 || nf1 || sign_vk)  
     
   #### 1.3.2 zkclient计算流程：  
         
@@ -258,7 +258,7 @@ python manage.py runserver 0.0.0.0:5002
    主要Groth16Mixer.sol  
    
    构造函数传入zksnark 的verifyKey  
-     ```
+```
      constructor(
      uint256 mk_depth,
      address token,
@@ -270,7 +270,7 @@ python manage.py runserver 0.0.0.0:5002
      uint256[2] memory Delta2,
      uint256[] memory ABC_coords)
      BaseMixer(mk_depth, token, poseidonAddress)
-     ```  
+```  
     
    mix函数逻辑 
   
