@@ -148,8 +148,8 @@ python manage.py runserver 0.0.0.0:5002
    7 生成随机数phi , 用于产生nullifierd的rho。 给output note加上 rho和trap_r
      phi = _phi_randomness()  32字节随机数  
      
-   8 计算output note的rho， trap_r
-     Returns rho_i = poseidon(0 || i || 10 || [phi]_250 || hsig)
+   8 计算output note的rho， trap_r.  
+     Returns rho_i = poseidon(0 || i || 10 || [phi]_250 || hsig)    
      trap_r产生随机数即可.
      此时output note 的rho和 trap_r 产生好了。
 
