@@ -17,7 +17,7 @@ Python钱包服务以Django服务框架为基础，使用fisco python sdk与fisc
 ### 1.2 部署
 
 - 环境要求：Python 3.7， gcc，mysql  
-####1.2.1
+#### 1.2.1
  1 拉取代码：  
     git clone https://github.com/yanyanho/zk-client.git  
  2 进入zk-client目录  
@@ -124,7 +124,7 @@ python manage.py runserver 0.0.0.0:5002
     left_leg_bin = "1010" + first_250bits_ask
 ```
     
-   5 构造JoinsplitInput，数据结构如下：
+   5 构造JoinsplitInput，数据结构如下：    
     ```
     JoinsplitInput(
     merkle_path=merkle_path,
@@ -138,20 +138,24 @@ python manage.py runserver 0.0.0.0:5002
     一次性签名密钥的signing_keypair.vk
     Compute h_sig = sha256(nf0 || nf1 || sign_vk)
     
-    ```
+   ```
       h_sig = compute_h_sig_cb(
       input_nullifier0,
       input_nullifier1,
       sign_vk)
-    ```
+   ```
       
    7 生成随机数phi , 用于产生nullifierd的rho。 给output note加上 rho和trap_r
+   ```
      phi = _phi_randomness()  32字节随机数  
-     
-   8 计算output note的rho， trap_r.  
+   ```
+  
+   8 计算output note的rho， trap_r. 
+   ``` 
      Returns rho_i = poseidon(0 || i || 10 || [phi]_250 || hsig)    
      trap_r产生随机数即可.
-     此时output note 的rho和 trap_r 产生好了。
+   ```
+   此时output note 的rho和 trap_r 产生好了。
 
      
    9 产生proofinput发送给prover:
@@ -177,16 +181,16 @@ python manage.py runserver 0.0.0.0:5002
    js_output :
    ZethNote(apk,value,rho,trap_r)
  ```  
-   10 获取proof后，加密outputnote。 用接收者的k_pk。
+   10 获取proof后，加密outputnote。 用接收者的k_pk。  
     ``` 
      _encrypt_note ，先ec25519随机产生一对公私钥对， 私钥乘接收者的k_pk(kdf), 计算共享密钥。
-      加密后，把临时公钥放在加密消息体头ciphertexts。
+      加密后，把临时公钥放在加密消息体头ciphertexts。  
       后续接收者接受event解密ciphertexts。获取outputnote
     ```   
    11 最后对整个joinsplit进行签名： 防止transaction malleability，
      schnorr签名私钥    
      
-     ```
+   ```
      joinsplit_sign(
              signing_keypair: JoinsplitSigKeyPair,
              sender_eth_address: str,
@@ -198,19 +202,20 @@ python manage.py runserver 0.0.0.0:5002
      - ciphertexts  
      - proof elements   
      - public input elements  
-    ```  
-   12 计算出mixparameter，然后调用  
+   ```    
+  
+  12 计算出mixparameter，然后调用  
      
-     ```
+   ```
      mix_params = contracts.MixParameters(
      proof_json,
      signing_keypair.vk,
      signature,
      ciphertexts)
-     ```   
-   event监听逻辑  
+   ```   
+    
   
-  13 解析event事件  
+  13 event监听逻辑 , 解析event事件  
    emit LogMix(mid,new_merkle_root,nullifiers,commitments,ciphertexts); 
    
    1 获取commit,更新merkel树  
