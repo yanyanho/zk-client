@@ -291,7 +291,7 @@ python manage.py runserver 0.0.0.0:5002
    ciphertexts);  
    6 处理公开转账    
 
- 重点input解析
+ proof中input数组的编码规则
 ``` 
  // ====================================================================== //
     // Reminder: Remember that the primary inputs are ordered as follows:
