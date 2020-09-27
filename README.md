@@ -278,18 +278,18 @@ python manage.py runserver 0.0.0.0:5002
     uint256[nbInputs] memory input,
     bytes[jsOut] memory ciphertexts)
  ```
-   1 检验nullifier和 hsig  
-   2 schnorr签名内容 joinsplit  
-   3 零知识versify  
-   4 新commit插入merkel树  
-   5 发送事件  
+   - 检验nullifier和 hsig  
+   - schnorr签名内容 joinsplit  
+   -  零知识versify  
+   -  新commit插入merkel树  
+   -  发送事件  
    emit LogMix(
    mid,
    new_merkle_root,
    nullifiers,
    commitments,
    ciphertexts);  
-   6 处理公开转账    
+   - 处理公开转账    
 
  proof中input数组的编码规则
 ``` 
