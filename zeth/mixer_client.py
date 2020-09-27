@@ -757,10 +757,6 @@ def compute_h_sig(
     print("nf1: ", int.from_bytes(nf1, byteorder="big"))
     h.update(signing.encode_vk_to_bytes(sign_vk))
     print("sign_vk: ")
-    print(int(sign_vk.ppk[0]))
-    print(int(sign_vk.ppk[1]))
-    print(int(sign_vk.spk[0]))
-    print(int(sign_vk.spk[1]))
     result = h.digest()
     print("digest result: ", int.from_bytes(result, byteorder="big"))
     result_int = int.from_bytes(result, byteorder="big") % constants.ZETH_PRIME
