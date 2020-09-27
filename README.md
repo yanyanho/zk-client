@@ -15,9 +15,9 @@ Python钱包服务以Django服务框架为基础，使用fisco python sdk与fisc
  4 取出资产  （从ZKBAC地址转移到fisco地址）  
 
 ### 1.2 部署
-
+ 此服务需配合prover服务一起使用。  
 - 环境要求：Python 3.7， gcc，mysql  
-#### 1.2.1
+#### 1.2.1 zkclient搭建
  1 拉取代码：  
     git clone https://github.com/yanyanho/zk-client.git  
  2 进入zk-client目录  
@@ -47,6 +47,12 @@ DATABASE_DEFAULT_DATABASE = "zk_test"（数据库名字）
 python manage.py runserver 0.0.0.0:5002 
 #启动django服务（如果python命令默认是python2，请使用python3命令）  
   ```
+
+#### 1.2.2 prover搭建  
+   1 获取镜像： zkbac-dev:latest  
+   2 docker run -ti -p 50051:50051 zkbac-dev:latest  
+   3 cd build && ./prover_server/prover_server  
+ 
 
 ### 1.3 原理介绍
  可以参考![原理图](./images/joinsplit.png)  
