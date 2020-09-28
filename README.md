@@ -99,7 +99,7 @@ python manage.py runserver 0.0.0.0:5002
         
    以存入资产为例：  
     1 构造outputnote: (apk,value)  
-    2 如果input note 输入不够2个 ，构造混淆inputnote， 并计算input zethnote的merkel路径 mkpath:    
+        2 如果input note 输入不够2个 ，构造混淆inputnote， 并计算input zethnote的merkel路径 mkpath:    
     
    ```
     dummy_note = ZethNote(
@@ -112,14 +112,8 @@ python manage.py runserver 0.0.0.0:5002
     dummy_k_pk = generate_encryption_keypair().k_pk
     dummy_addr_pk = ZethAddressPub(sender_a_pk, dummy_k_pk)
    ```  
- 
-   3 此时inputnote(apk,value,rho,trap_r) 和 outputnote（apk,value）已经建好。下面开始构造joinsplit 
-      产生一次性的签名密钥（schnorr签名）用于签名joinsplit    
-    ```
-     signing_keypair= signing.gen_signing_keypair()
-    ```
-      
-   4 根据inputnote计算nullifier      
+  
+   3 根据inputnote计算nullifier      
      compute_nullifier：
      Returns nf = poseidon(1010 || [a_sk]_250 || rho)
 
@@ -129,7 +123,11 @@ python manage.py runserver 0.0.0.0:5002
     first_250bits_ask = a_sk_254[:250]
     left_leg_bin = "1010" + first_250bits_ask
 ```
-    
+  4 此时inputnote(apk,value,rho,trap_r) 和 outputnote（apk,value）已经建好。下面开始构造joinsplit 
+      产生一次性的签名密钥（schnorr签名）用于签名joinsplit    
+    ```
+     signing_keypair= signing.gen_signing_keypair()
+    ```
    5 构造JoinsplitInput，数据结构如下：    
     ```
     JoinsplitInput(
@@ -334,6 +332,27 @@ python manage.py runserver 0.0.0.0:5002
     // ============================================================================================ //
 ```
 
+ #### 1.3.4 prover计算流程：
+1 解析参数：   
+ ```
+  prover_server.cpp中：
+  prover.prove(
+  roots,
+  joinsplit_inputs,
+  joinsplit_outputs,
+  vpub_in,
+  vpub_out,
+  h_sig_in,
+  phi_in,
+  this->keypair.pk
+ ``` 
+ 2 circuit_wrapper 方法 调用joinsplit_gadget    
+ joinsplit_gadget<FieldT, HashT, HashTreeT, NumInputs, NumOutputs, TreeDepth>
+ g(pb, roots, inputs, outputs, vpub_in, vpub_out, h_sig_in, phi_in);
+ prover circuit的核心即是joinsplit_gadget  
+  由4个功能型note_gadget，PRF_gadget，COMM_cm_gadget，和merkle_path_compute；  
+  关注各gadget的Public input，Private input，Constraint，Witness即可。
+ 
 
 ### 1.4 接口文档
 

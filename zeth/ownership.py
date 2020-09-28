@@ -85,7 +85,7 @@ def _derive_a_pk(a_sk: OwnershipSecretKey) -> OwnershipPublicKey:
 '''
 def _derive_a_pk(a_sk: OwnershipSecretKey) -> OwnershipPublicKey:
     """
-    Returns a_pk = blake2s(1100 || [a_sk]_250 || 0^254)
+    Returns a_pk = poseidon(0010 || [a_sk]_250 || 0)
     """
     inputs = []
     binary_a_sk = digest_to_binary_string(a_sk)
