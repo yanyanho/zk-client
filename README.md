@@ -149,7 +149,7 @@ python manage.py runserver 0.0.0.0:5002
       sign_vk)
    ```
       
-   7 生成随机数phi , 用于产生nullifierd的rho。 给output note加上 rho和trap_r
+   7 生成随机数phi , 用于产生新outut的rho。 给output note加上 rho和trap_r
    ```
      phi = _phi_randomness()  32字节随机数  
    ```
@@ -357,4 +357,4 @@ python manage.py runserver 0.0.0.0:5002
 
 ### 1.4 接口文档
 
- [接口文档](user_interface.md)
+ [接口文档](user_interface.md) 
