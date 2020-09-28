@@ -346,10 +346,11 @@ python manage.py runserver 0.0.0.0:5002
   phi_in,
   this->keypair.pk
  ``` 
- 2 circuit_wrapper 方法 调用joinsplit_gadget    
+ 2 circuit_wrapper 方法 调用joinsplit_gadget, prover circuit的核心即是joinsplit_gadget   
+```    
  joinsplit_gadget<FieldT, HashT, HashTreeT, NumInputs, NumOutputs, TreeDepth>
  g(pb, roots, inputs, outputs, vpub_in, vpub_out, h_sig_in, phi_in);
- prover circuit的核心即是joinsplit_gadget  
+```
   由4个功能型note_gadget，PRF_gadget，COMM_cm_gadget，和merkle_path_compute；  
   关注各gadget的Public input，Private input，Constraint，Witness即可。
  
