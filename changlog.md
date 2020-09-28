@@ -1,8 +1,8 @@
 ### 修改日志
 
 - 计算apk  
-  Returns a_pk = blake2s(1100 || [a_sk]_250 || 0^254)
- 替换为
+  Returns a_pk = blake2s(1100 || [a_sk]_250 || 0^254)  
+ 替换为  
 Returns a_pk = poseidon(0010 || [a_sk]_250 || 0)
  
  - **计算nullifier**   
