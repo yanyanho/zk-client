@@ -52,7 +52,7 @@ sqlparse==0.3.1
 toolz==0.9.0
 typed-ast==1.4.1
 typing-extensions==3.7.4.2
-urllib3==1.24.2
+urllib3==1.26.5
 web3==4.8.2
 websockets==6.0
 wrapt==1.11.2
