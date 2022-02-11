@@ -46,7 +46,7 @@ setup(
         "idna==2.8",
         "lru-dict==1.1.6",
         "parsimonious==0.8.1",
-        "protobuf==3.6.1",
+        "protobuf==3.15.0",
         "py_ecc==1.7.1",
         "py-solc-x==0.7.0",
         "pycryptodome==3.9.0",
