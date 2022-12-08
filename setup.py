@@ -29,7 +29,7 @@ setup(
         "click==7.0",
         "click-default-group==1.2",
         "attrdict==2.0.1",
-        "certifi==2018.11.29",
+        "certifi==2022.12.7",
         "chardet==3.0.4",
         "cytoolz==0.9.0.1",
         "eth-abi==1.3.0",
